@@ -1,2 +1,0 @@
-https://example.com/file1.html
-https://example.com/file2.html
