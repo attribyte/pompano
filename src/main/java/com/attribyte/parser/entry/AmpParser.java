@@ -52,7 +52,7 @@ public class AmpParser implements com.attribyte.parser.Parser {
 
    @Override
    public String name() {
-      return "HTML Amp";
+      return "HTML AMP";
    }
 
    @Override
@@ -103,12 +103,17 @@ public class AmpParser implements com.attribyte.parser.Parser {
             entry.setOriginalContent(doc.body());
          }
 
+         if(entry.getImages().size() > 0 && entry.getPrimaryImage() == null) {
+            entry.setPrimaryImage(entry.getImages().get(0));
+         }
+
+         resource.addEntry(entry.build());
          return new ParseResult(resource.build());
 
       } catch(Error e) {
          throw e;
       } catch(Throwable t) {
-         return new ParseResult(new ParseError("HTML Metadata Parser Failure", t));
+         return new ParseResult(new ParseError("HTML AMP Parser Failure", t));
       }
    }
 
