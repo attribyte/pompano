@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# The location of the java interpreter may be set explicitly with JAVA_EXE.
+# Otherwise, JAVA_HOME is used.
+# Finally, if JAVA_HOME is undefined, simply use 'java'.
+#JAVA_EXE="/usr/local/jdk8/bin/java"
+VERSION=0.1.0
+if [ -z "$JAVA_EXE" ]
+then
+  if [ -z "$JAVA_HOME" ]
+  then
+    JAVA_EXE="java"
+  else
+    JAVA_EXE="$JAVA_HOME/bin/java"
+  fi
+fi
+
+# The installation directory containing configuration and dependencies may be set explicitly with INSTALL_DIR.
+# Otherwise, an attempt is made to discover the location of this start script.
+#INSTALL_DIR=/var/attribyte/pompano
+
+if [ -z "$INSTALL_DIR" ]
+then
+  DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+  INSTALL_DIR="$(dirname "$DIR")"
+fi
+
+CLASSPATH="$INSTALL_DIR/target/pompano-$VERSION.jar"
+
+DIST_LIB_DIR="$INSTALL_DIR/target/dependency"
+for jar in `ls $DIST_LIB_DIR/*.jar`;
+do
+        CLASSPATH=$CLASSPATH:$jar
+done
+
+export CLASSPATH
+
+if [ -z "$1" ]
+then
+  echo "A URL must be specified";
+  exit 1;
+fi
+
+$JAVA_EXE com.attribyte.parser.page.MetadataViewer $1

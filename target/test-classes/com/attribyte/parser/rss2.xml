@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<rss version="2.0"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:feedburner="http://rssnamespace.org/feedburner/ext/1.0"
+     xmlns:media="http://search.yahoo.com/mrss/"
+>
+    <channel>
+        <title>The channel title</title>
+        <link>https://attribyte.com</link>
+        <description>The channel description</description>
+        <copyright>Copyright 2018, Attribyte LLC</copyright>
+        <pubDate>Mon, 30 Sep 2002 11:00:00 GMT</pubDate>
+        <lastBuildDate>Mon, 30 Sep 2002 12:00:00 GMT</lastBuildDate>
+        <item>
+            <title>The First Item</title>
+            <link>https://attribyte.com/test1</link>
+            <description>
+                The first item.
+            </description>
+            <pubDate>Sun, 29 Sep 2002 23:48:33 GMT</pubDate>
+        </item>
+        <item>
+            <title>The Second Item</title>
+            <link>https://attribyte.com/test2</link>
+            <description>
+                The second item.
+            </description>
+            <pubDate>Sun, 29 Sep 2002 23:48:33 GMT</pubDate>
+            <dc:creator>Matt Hamer</dc:creator>
+        </item>
+        <item>
+            <title>The Third Item</title>
+            <link>https://attribyte.com/test3</link>
+            <description>
+                The third item.
+            </description>
+            <dc:date>Sun, 29 Sep 2002 23:48:33 GMT</dc:date>
+            <author>blah@example.com ( Mary Smith )</author>
+        </item>
+        <item>
+            <title>The Fourth Item</title>
+            <link>https://attribyte.com/test4</link>
+            <description>
+                The fourth item.
+            </description>
+            <dc:date>Sun, 29 Sep 2002 23:48:33 GMT</dc:date>
+            <category>chickens</category>
+            <category><![CDATA[ death ]]></category>
+            <category><![CDATA[ disease ]]></category>
+            <category>chickens</category>
+        </item>
+        <item>
+            <title>The Fifth Item</title>
+            <guid isPermalink="true">https://attribyte.com/test5</guid>
+            <description>
+                The fifth item.
+            </description>
+            <dc:date>Sun, 29 Sep 2002 23:48:33 GMT</dc:date>
+            <media:content url="https://images.example.com/test.jpg" type="image/jpeg" medium="image" width="1280" height="720"/>
+        </item>
+        <item>
+            <title>The Sixth Item</title>
+            <guid isPermalink="true">https://attribyte.com/test6fake</guid>
+            <description>
+                The sixth item.
+            </description>
+            <dc:date>Sun, 29 Sep 2002 23:48:33 GMT</dc:date>
+            <media:content url="https://images.example.com/test.jpg" type="image/jpeg" medium="image" width="1280" height="720">
+                <media:title type="plain">The image title</media:title>
+            </media:content>
+            <feedburner:origLink>https://attribyte.com/test6</feedburner:origLink>
+        </item>
+        <item>
+            <title>The Seventh Item</title>
+            <link>https://attribyte.com/test7</link>
+            <description>
+                The seventh item.
+            </description>
+            <dc:date>Sun, 29 Sep 2002 23:48:33 GMT</dc:date>
+            <enclosure url="https://images.example.com/test.jpg" length="12" type="image/jpeg"/>
+        </item>
+        <item>
+            <title>The Eigth Item</title>
+            <guid isPermalink="true">https://attribyte.com/test8</guid>
+            <description>
+                The eight item.
+            </description>
+            <dc:date>Sun, 29 Sep 2002 23:48:33 GMT</dc:date>
+            <media:group>
+                <media:content url="https://images.example.com/test.jpg" type="image/jpeg" medium="image" width="1280" height="720">
+                    <media:title type="plain">The image title</media:title>
+                </media:content>
+            </media:group>
+        </item>
+
+
+    </channel>
+</rss>
