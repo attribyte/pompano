@@ -52,7 +52,7 @@ public class AmpParser implements com.attribyte.parser.Parser {
 
    @Override
    public String name() {
-      return "HTML AMP";
+      return "html-amp";
    }
 
    @Override

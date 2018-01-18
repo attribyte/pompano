@@ -45,7 +45,7 @@ public class UniversalParser implements Parser {
 
    @Override
    public String name() {
-      return "Universal";
+      return "universal";
    }
 
 }

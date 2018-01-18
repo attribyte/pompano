@@ -45,7 +45,7 @@ public class HTMLMetadataParser implements com.attribyte.parser.Parser {
 
    @Override
    public String name() {
-      return "HTML Metadata";
+      return "html-metadata";
    }
 
    @Override
