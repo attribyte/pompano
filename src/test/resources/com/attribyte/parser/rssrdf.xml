@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<rdf:RDF
+        xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns="http://purl.org/rss/1.0/"
+>
+    <channel rdf:about="http://www.xml.com/xml/news.rss">
+        <title>The Channel Title</title>
+        <link>https://example.com/feed</link>
+        <description>
+            The Channel Description
+        </description>
+        <image rdf:resource="http://xml.com/universal/images/xml_tiny.gif" />
+        <items>
+            <rdf:Seq>
+                <rdf:li resource="http://xml.com/pub/2000/08/09/xslt/xslt.html" />
+                <rdf:li resource="http://xml.com/pub/2000/08/09/rdfdb/index.html" />
+            </rdf:Seq>
+        </items>
+    </channel>
+    <image rdf:about="http://xml.com/universal/images/xml_tiny.gif">
+        <title>XML.com</title>
+        <link>http://www.xml.com</link>
+        <url>http://xml.com/universal/images/xml_tiny.gif</url>
+    </image>
+    <item rdf:about="https://example.com/test1">
+        <title>Test Title 1</title>
+        <link>https://example.com/test1</link>
+        <description>
+            Test description 1
+        </description>
+        <dc:date>Sun, 29 Sep 2002 23:48:33 GMT</dc:date>
+    </item>
+    <item rdf:about="https://example.com/test2">
+        <title>Test Title 2</title>
+        <link>https://example.com/test2</link>
+        <description>
+            Test description 2
+        </description>
+        <dc:date>Sun, 29 Sep 2002 23:48:33 GMT</dc:date>
+    </item>
+</rdf:RDF>

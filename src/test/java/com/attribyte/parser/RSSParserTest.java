@@ -189,6 +189,35 @@ public class RSSParserTest extends ResourceTest {
       assertEquals("The image title", entry.primaryImage.get().title);
    }
 
+   @Test
+   public void rdf() throws IOException {
+      ParseResult res = new RSSParser().parse(testResource("rssrdf.xml"), "", new DefaultContentCleaner());
+      assertNotNull(res);
+      assertFalse(res.hasErrors());
+      assertTrue(res.resource.isPresent());
+      Resource parsedResource = res.resource.get();
+      assertEquals("The Channel Title", parsedResource.title);
+      assertEquals("The Channel Description", parsedResource.description);
+      assertEquals("https://example.com/feed", parsedResource.siteLink);
+      assertEquals(2, parsedResource.entries.size());
+      Entry entry = findEntry("https://example.com/test1", parsedResource);
+      assertNotNull(entry);
+      assertEquals("Test Title 1", entry.title);
+      assertEquals("https://example.com/test1", entry.canonicalLink);
+      assertTrue(entry.originalContent().isPresent());
+      assertEquals("Test description 1", entry.originalContent().get().text());
+      assertEquals("Test description 1", entry.cleanContent);
+      assertEquals("2002-09-29T23:48:33Z", ISODateTimeFormat.dateTimeNoMillis().withZoneUTC().print(entry.publishedTimestamp));
+
+      entry = findEntry("https://example.com/test2", parsedResource);
+      assertNotNull(entry);
+      assertEquals("Test Title 2", entry.title);
+      assertEquals("https://example.com/test2", entry.canonicalLink);
+      assertTrue(entry.originalContent().isPresent());
+      assertEquals("Test description 2", entry.originalContent().get().text());
+      assertEquals("Test description 2", entry.cleanContent);
+   }
+
    private static Entry findEntry(final String link, final Resource parsedResource) {
       for(Entry entry : parsedResource.entries) {
          if(entry.canonicalLink.equals(link)) {
