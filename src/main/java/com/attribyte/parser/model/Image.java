@@ -20,6 +20,10 @@ package com.attribyte.parser.model;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
+import com.google.common.hash.Hashing;
+import com.google.protobuf.ByteString;
+
+import java.util.Optional;
 
 /**
  * An immutable image.
@@ -131,11 +135,20 @@ public class Image {
       }
 
       /**
-       * Creates a builder with the required link.
-       * @param link The required link.
+       * Creates a builder with a link.
+       * @param link The link.
        */
       private Builder(final String link) {
          this.link = link;
+      }
+
+      /**
+       * Creates a builder with image data.
+       * @param data The image data.
+       */
+      private Builder(final byte[] data) {
+         this.link = Hashing.sha256().hashBytes(data).toString();
+         this.data = data;
       }
 
       /**
@@ -146,15 +159,18 @@ public class Image {
        * @param title The title.
        * @param width The width.
        * @param height The height.
+       * @param data The image data.
        */
       private Builder(final String id, final String link, final String altText,
-                      final String title, final int width, final int height) {
+                      final String title, final int width, final int height,
+                      final byte[] data) {
          this.id = id;
          this.link = link;
          this.altText = altText;
          this.title = title;
          this.width = width;
          this.height = height;
+         this.data = data;
       }
 
       private String id;
@@ -163,13 +179,14 @@ public class Image {
       private String title;
       private int width;
       private int height;
+      private byte[] data;
 
       /**
        * Builds an immutable image.
        * @return The image.
        */
       public Image build() {
-         return new Image(id, link, altText, title, width, height);
+         return new Image(id, link, altText, title, width, height, data);
       }
    }
 
@@ -181,20 +198,45 @@ public class Image {
     * @param title The title.
     * @param width The width.
     * @param height The height.
+    * @param data The data.
     */
    private Image(final String id, final String link, final String altText,
-                 final String title, final int width, final int height) {
+                 final String title, final int width, final int height,
+                 final byte[] data) {
       this.id = Strings.nullToEmpty(id);
       this.link = link;
       this.altText = Strings.nullToEmpty(altText);
       this.title = Strings.nullToEmpty(title);
       this.width = width;
       this.height = height;
+      this.data = data != null && data.length > 0 ? Optional.of(ByteString.copyFrom(data)) : Optional.empty();
    }
 
    /**
-    * Creates a builder.
-    * @param link The required link.
+    * Creates an image.
+    * @param id The id.
+    * @param link The (required) link.
+    * @param altText The alternate text.
+    * @param title The title.
+    * @param width The width.
+    * @param height The height.
+    * @param data The data.
+    */
+   private Image(final String id, final String link, final String altText,
+                 final String title, final int width, final int height,
+                 final Optional<ByteString> data) {
+      this.id = Strings.nullToEmpty(id);
+      this.link = link;
+      this.altText = Strings.nullToEmpty(altText);
+      this.title = Strings.nullToEmpty(title);
+      this.width = width;
+      this.height = height;
+      this.data = data;
+   }
+
+   /**
+    * Creates a builder for images with a link.
+    * @param link The link.
     * @return The builder.
     * @throws UnsupportedOperationException If the specified link is {@code null} or empty.
     */
@@ -206,12 +248,26 @@ public class Image {
    }
 
    /**
+    * Creates a builder for images with data.
+    * @param data The data.
+    * @return The builder.
+    * @throws UnsupportedOperationException If the specified data is {@code null} or empty.
+    */
+   public static Builder builder(final byte[] data) throws UnsupportedOperationException {
+      if(data == null || data.length == 0) {
+         throw new UnsupportedOperationException("The image 'data' must not be null or empty");
+      } else {
+         return new Builder(data);
+      }
+   }
+
+   /**
     * Creates a builder from an existing image.
     * @param image The image.
     * @return The builder initialized from the existing image.
     */
    public static Builder builder(final Image image) {
-      return new Builder(image.id, image.link, image.altText, image.title, image.width, image.height);
+      return new Builder(image.id, image.link, image.altText, image.title, image.width, image.height, image.data.map(ByteString::toByteArray).orElse(null));
    }
 
    /**
@@ -224,9 +280,8 @@ public class Image {
       if(Strings.nullToEmpty(link).trim().isEmpty()) {
          throw new UnsupportedOperationException("The image 'link' must not be null or empty");
       }
-      return new Image(link, this.id, this.altText, this.title, this.width, this.height);
+      return new Image(link, this.id, this.altText, this.title, this.width, this.height, this.data);
    }
-
 
    @Override
    public String toString() {
@@ -237,6 +292,7 @@ public class Image {
               .add("title", title)
               .add("width", width)
               .add("height", height)
+              .add("data", data)
               .toString();
    }
 
@@ -284,4 +340,9 @@ public class Image {
     * The image height or {@code 0} if unknown.
     */
    public final int height;
+
+   /**
+    * The image data (bytes), if available.
+    */
+   public final Optional<ByteString> data;
 }
