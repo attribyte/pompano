@@ -67,17 +67,17 @@ public class AmpParser implements com.attribyte.parser.Parser {
 
          Element head = doc.head();
          if(head == null) {
-            return new ParseResult(new ParseError("AMP document must have a 'head'"));
+            return new ParseResult(name(), new ParseError("AMP document must have a 'head'"));
          }
 
          Element canonicalLinkElem = firstMatch(head, "link[rel=canonical]");
          if(canonicalLinkElem == null) {
-            return new ParseResult(new ParseError("AMP document must have a canonical link"));
+            return new ParseResult(name(), new ParseError("AMP document must have a canonical link"));
          }
 
          String href = canonicalLinkElem.attr("href").trim();
          if(href.isEmpty()) {
-            return new ParseResult(new ParseError("AMP document must have a valid canonical link"));
+            return new ParseResult(name(), new ParseError("AMP document must have a valid canonical link"));
          }
 
          parseMetaJSON(head, entry);
@@ -108,12 +108,12 @@ public class AmpParser implements com.attribyte.parser.Parser {
          }
 
          resource.addEntry(entry.build());
-         return new ParseResult(resource.build());
+         return new ParseResult(name(), resource.build());
 
       } catch(Error e) {
          throw e;
       } catch(Throwable t) {
-         return new ParseResult(new ParseError("HTML AMP Parser Failure", t));
+         return new ParseResult(name(), new ParseError("HTML AMP Parser Failure", t));
       }
    }
 

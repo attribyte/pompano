@@ -117,12 +117,12 @@ public class HTMLMetadataParser implements com.attribyte.parser.Parser {
          }
 
          resource.addEntry(entry.build());
-         return new ParseResult(resource.build());
+         return new ParseResult(name(), resource.build());
 
       } catch(Error e) {
          throw e;
       } catch(Throwable t) {
-         return new ParseResult(new ParseError("HTML Metadata Parser Failure", t));
+         return new ParseResult(name(), new ParseError("HTML Metadata Parser Failure", t));
       }
    }
 }

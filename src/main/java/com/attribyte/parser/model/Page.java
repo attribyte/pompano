@@ -106,7 +106,7 @@ public class Page {
       try {
          URL url = new URL(canonicalLink);
          String host = Strings.nullToEmpty(url.getHost()).trim();
-         String file = Hashing.md5().hashString(canonicalLink, Charsets.UTF_8).toString();
+         String file = Hashing.sha256().hashString(canonicalLink, Charsets.UTF_8).toString().substring(0, 16);
          File outputFile = new File(debugOutputDir, host + "/" + file);
          System.out.println("Writing to " + outputFile.getAbsolutePath());
          if(!outputFile.getParentFile().mkdirs()) {

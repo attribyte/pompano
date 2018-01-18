@@ -32,36 +32,41 @@ public class ParseResult {
 
    /**
     * Creates a parse result with a parsed resource and no errors.
+    * @param parserName The name of the parser that created the result.
     * @param resource The resource.
     */
-   public ParseResult(final Resource resource) {
-      this(resource, null);
+   public ParseResult(final String parserName, final Resource resource) {
+      this(parserName, resource, null);
    }
 
    /**
     * Creates a parse result with a single error and no parsed resource.
+    * @param parserName The name of the parser that created the result.
     * @param error The error.
     */
-   public ParseResult(final ParseError error) {
-      this.resource = Optional.empty();
-      this.errors = ImmutableList.of(error);
+   public ParseResult(final String parserName, final ParseError error) {
+      this(parserName, ImmutableList.of());
    }
 
    /**
     * Creates a parse result with a list of errors and no parsed resource.
+    * @param parserName The name of the parser that created the result.
     * @param errors The errors.
     */
-   public ParseResult(final List<ParseError> errors) {
+   public ParseResult(final String parserName, final List<ParseError> errors) {
+      this.parserName = parserName;
       this.resource = Optional.empty();
       this.errors = errors != null ? ImmutableList.copyOf(errors) : ImmutableList.of();
    }
 
    /**
     * Creates a parse result with a parsed resource and a list of (non-fatal) errors.
+    * @param parserName The name of the parser that created the result.
     * @param resource The resource.
     * @param errors The errors.
     */
-   public ParseResult(final Resource resource, final List<ParseError> errors) {
+   public ParseResult(final String parserName, final Resource resource, final List<ParseError> errors) {
+      this.parserName = parserName;
       this.resource = Optional.of(resource);
       this.errors = errors != null ? ImmutableList.copyOf(errors) : ImmutableList.of();
    }
@@ -83,4 +88,9 @@ public class ParseResult {
     * An immutable list of errors.
     */
    public final ImmutableList<ParseError> errors;
+
+   /**
+    * The name of the parser used to create this result.
+    */
+   public final String parserName;
 }

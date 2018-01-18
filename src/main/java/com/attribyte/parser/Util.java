@@ -21,6 +21,7 @@ package com.attribyte.parser;
 import com.attribyte.parser.model.Entry;
 import com.attribyte.parser.model.Image;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.net.InternetDomainName;
@@ -204,5 +205,65 @@ public class Util {
          }
       }
       return false;
+   }
+
+   /**
+    * Determine if a string ends with another string, ignoring trailing "invisible" characters in the source.
+    * @param match The string to match at the end.
+    * @param source The source string.
+    * @return Does the source end with the match string (ignoring invisible characters).
+    */
+   public static boolean endsWithIgnoreInvisible(final String match, final String source) {
+      int sourcePos = source.length();
+      CharMatcher matcher = CharMatcher.invisible();
+      while(--sourcePos >= 0) {
+         if(!matcher.matches(source.charAt(sourcePos))) {
+            break;
+         }
+      }
+
+      int matchPos = match.length();
+      if(matchPos == 0) {
+         return false;
+      }
+
+      while(--matchPos >= 0) {
+         if(sourcePos < 0 || match.charAt(matchPos) != source.charAt(sourcePos)) {
+            return false;
+         }
+         sourcePos--;
+      }
+      return true;
+   }
+
+   /**
+    * Determine if a string starts with another string, ignoring leading "invisible" characters in the source.
+    * @param match The string to match at the end.
+    * @param source The source string.
+    * @return Does the source end with the match string (ignoring invisible characters).
+    */
+   public static boolean startsWithIgnoreInvisible(final String match, final String source) {
+      if(match.length() == 0) {
+         return false;
+      }
+
+      int sourcePos = 0;
+      CharMatcher matcher = CharMatcher.invisible();
+      while(sourcePos++ < source.length()) {
+         if(!matcher.matches(source.charAt(sourcePos))) {
+            break;
+         }
+      }
+
+      int matchPos = 0;
+
+      while(matchPos < match.length()) {
+         if(sourcePos >= source.length() || match.charAt(matchPos) != source.charAt(sourcePos)) {
+            return false;
+         }
+         matchPos++;
+         sourcePos++;
+      }
+      return true;
    }
 }

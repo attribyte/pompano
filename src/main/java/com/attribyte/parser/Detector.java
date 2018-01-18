@@ -16,13 +16,15 @@
  * and limitations under the License.
  */
 package com.attribyte.parser;
-import com.google.common.base.CharMatcher;
+
 import com.google.common.base.Strings;
-import com.google.protobuf.ByteString;
-import org.attribyte.api.http.Response;
 
-import java.io.IOException;
+import static com.attribyte.parser.Util.endsWithIgnoreInvisible;
 
+/**
+ * Attempt to detect the content format to select a parser.
+ * @author Matt Hamer
+ */
 public interface Detector {
 
    public enum Format {
@@ -58,30 +60,23 @@ public interface Detector {
    }
 
    /**
-    * Examines the response body and headers to attempt to determine
+    * Examines the response body and content type to attempt to determine
     * the format of the content to be parsed.
-    * @param response The HTTP response.
+    * @param body The response body.
+    * @param contentType The content type header value, if known.
     * @return The format or {@code UNKNOWN} if detection failed.
-    * @throws IOException on body or header read failure.
     */
-   public static Format detect(final Response response) throws IOException {
+   public static Format detect(final String body, final String contentType) {
 
-      final ByteString responseBytes = response.getBody();
-      if(responseBytes == null) {
-         return Format.UNKNOWN;
-      }
-
-      final String body = CharMatcher.whitespace().trimFrom(responseBytes.toStringUtf8());
-      final String contentType = CharMatcher.whitespace().trimFrom(Strings.nullToEmpty(response.getContentType()));
-      if(body.endsWith("</rss>") || body.endsWith("</rdf:RDF>")) {
+      if(endsWithIgnoreInvisible("</rss>", body) || endsWithIgnoreInvisible("</rdf:RDF>", body)) {
          return Format.RSS;
-      } else if(body.endsWith("</feed>")) {
+      } else if(endsWithIgnoreInvisible("</feed>", body)) {
          return Format.ATOM;
-      } else if(body.endsWith("</urlset>")) {
+      } else if(endsWithIgnoreInvisible("</urlset>", body)) {
          return Format.SITEMAP;
       } else if(body.contains("<html amp>") || body.contains("<html ⚡>")) {
          return Format.AMP;
-      } else if(body.endsWith("</html>") || contentType.startsWith("text/html")) {
+      } else if(endsWithIgnoreInvisible("</html>", body) || Strings.nullToEmpty(contentType).startsWith("text/html")) {
          return Format.HTML;
       } else {
          return Format.UNKNOWN;

@@ -102,7 +102,7 @@ public class DateParser {
 
       //Find the first digit position - ignore the day of week and any leading spaces
 
-      while(pos < len && !CharMatcher.DIGIT.matches(chars[pos])) {
+      while(pos < len && !CharMatcher.digit().matches(chars[pos])) {
          pos++;
       }
 
@@ -328,7 +328,7 @@ public class DateParser {
     * @return The position of the first non-space.
     */
    private static int eatSpaces(int pos, final char[] chars) {
-      while(pos < chars.length && CharMatcher.WHITESPACE.matches(chars[pos])) {
+      while(pos < chars.length && CharMatcher.whitespace().matches(chars[pos])) {
          pos++;
       }
       return pos;
@@ -342,7 +342,7 @@ public class DateParser {
     * @return The end position in the input buffer.
     */
    private static int appendToSpace(int pos, final char[] chars, final StringBuilder buf) {
-      while(pos < chars.length && !CharMatcher.WHITESPACE.matches(chars[pos])) {
+      while(pos < chars.length && !CharMatcher.whitespace().matches(chars[pos])) {
          buf.append(chars[pos]);
          pos++;
       }
