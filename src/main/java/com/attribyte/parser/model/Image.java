@@ -135,6 +135,24 @@ public class Image {
       }
 
       /**
+       * Gets the media type.
+       * @return The media type.
+       */
+      public String getMediaType() {
+         return mediaType;
+      }
+
+      /**
+       * Sets the media type.
+       * @param mediaType The media type.
+       * @return A self-reference.
+       */
+      public Builder setMediaType(final String mediaType) {
+         this.mediaType = mediaType;
+         return this;
+      }
+
+      /**
        * Creates a builder with a link.
        * @param link The link.
        */
@@ -159,10 +177,12 @@ public class Image {
        * @param title The title.
        * @param width The width.
        * @param height The height.
+       * @param mediaType The media type.
        * @param data The image data.
        */
       private Builder(final String id, final String link, final String altText,
                       final String title, final int width, final int height,
+                      final String mediaType,
                       final byte[] data) {
          this.id = id;
          this.link = link;
@@ -170,6 +190,7 @@ public class Image {
          this.title = title;
          this.width = width;
          this.height = height;
+         this.mediaType = mediaType;
          this.data = data;
       }
 
@@ -179,6 +200,7 @@ public class Image {
       private String title;
       private int width;
       private int height;
+      private String mediaType;
       private byte[] data;
 
       /**
@@ -186,7 +208,7 @@ public class Image {
        * @return The image.
        */
       public Image build() {
-         return new Image(id, link, altText, title, width, height, data);
+         return new Image(id, link, altText, title, width, height, mediaType, data);
       }
    }
 
@@ -198,10 +220,12 @@ public class Image {
     * @param title The title.
     * @param width The width.
     * @param height The height.
+    * @param mediaType The media type.
     * @param data The data.
     */
    private Image(final String id, final String link, final String altText,
                  final String title, final int width, final int height,
+                 final String mediaType,
                  final byte[] data) {
       this.id = Strings.nullToEmpty(id);
       this.link = link;
@@ -209,6 +233,7 @@ public class Image {
       this.title = Strings.nullToEmpty(title);
       this.width = width;
       this.height = height;
+      this.mediaType = Strings.nullToEmpty(mediaType);
       this.data = data != null && data.length > 0 ? Optional.of(ByteString.copyFrom(data)) : Optional.empty();
    }
 
@@ -220,10 +245,12 @@ public class Image {
     * @param title The title.
     * @param width The width.
     * @param height The height.
+    * @param mediaType The media type.
     * @param data The data.
     */
    private Image(final String id, final String link, final String altText,
                  final String title, final int width, final int height,
+                 final String mediaType,
                  final Optional<ByteString> data) {
       this.id = Strings.nullToEmpty(id);
       this.link = link;
@@ -231,6 +258,7 @@ public class Image {
       this.title = Strings.nullToEmpty(title);
       this.width = width;
       this.height = height;
+      this.mediaType = Strings.nullToEmpty(mediaType);
       this.data = data;
    }
 
@@ -267,7 +295,8 @@ public class Image {
     * @return The builder initialized from the existing image.
     */
    public static Builder builder(final Image image) {
-      return new Builder(image.id, image.link, image.altText, image.title, image.width, image.height, image.data.map(ByteString::toByteArray).orElse(null));
+      return new Builder(image.id, image.link, image.altText, image.title, image.width, image.height, image.mediaType,
+              image.data.map(ByteString::toByteArray).orElse(null));
    }
 
    /**
@@ -280,7 +309,7 @@ public class Image {
       if(Strings.nullToEmpty(link).trim().isEmpty()) {
          throw new UnsupportedOperationException("The image 'link' must not be null or empty");
       }
-      return new Image(link, this.id, this.altText, this.title, this.width, this.height, this.data);
+      return new Image(link, this.id, this.altText, this.title, this.width, this.height, this.mediaType, this.data);
    }
 
    @Override
@@ -292,6 +321,7 @@ public class Image {
               .add("title", title)
               .add("width", width)
               .add("height", height)
+              .add("mediaType", mediaType)
               .add("data", data)
               .toString();
    }
@@ -340,6 +370,11 @@ public class Image {
     * The image height or {@code 0} if unknown.
     */
    public final int height;
+
+   /**
+    * The media type (for example, {@code image/png}), or an empty string if unknown.
+    */
+   public final String mediaType;
 
    /**
     * The image data (bytes), if available.

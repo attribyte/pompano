@@ -21,6 +21,7 @@ package com.attribyte.parser.page;
 import com.attribyte.json.JSONToJsoup;
 import com.attribyte.parser.model.Anchor;
 import com.attribyte.parser.model.Audio;
+import com.attribyte.parser.model.DataURI;
 import com.attribyte.parser.model.Image;
 import com.attribyte.parser.model.Link;
 import com.attribyte.parser.model.Page;
@@ -110,18 +111,35 @@ public class HTMLPageParser {
 
       metaImages(doc, entryMetadata, images, metaImages);
       for(Element imageElement : imageElements) {
-         String src = imageElement.absUrl("src");
+         String src = imageElement.attr("src");
          if(!src.isEmpty()) {
-            String alt = imageElement.attr("alt");
-            String title = imageElement.attr("title");
-            Integer height = Ints.tryParse(imageElement.attr("height"));
-            Integer width = Ints.tryParse(imageElement.attr("width"));
-            Image image = Image.builder(src).setAltText(alt).setTitle(title)
-                    .setHeight(height != null ? height : 0)
-                    .setWidth(width != null ? width : 0)
-                    .build();
-            if(!images.contains(image)) {
-               images.add(image);
+            if(src.startsWith("data:image")) {
+               try {
+                  DataURI duri = new DataURI(src);
+                  if(duri.base64Encoded && !duri.data.isEmpty()) {
+                     Image image = Image.builder(duri.data.toByteArray()).setMediaType(duri.mediaType).build();
+                     if(!images.contains(image)) {
+                        images.add(image);
+                     }
+
+                  } //Otherwise ignore...
+
+               } catch(IllegalArgumentException iae) {
+                  //Ignore images with invalid data URI in src...
+               }
+            } else {
+               src = imageElement.absUrl("src");
+               String alt = imageElement.attr("alt");
+               String title = imageElement.attr("title");
+               Integer height = Ints.tryParse(imageElement.attr("height"));
+               Integer width = Ints.tryParse(imageElement.attr("width"));
+               Image image = Image.builder(src).setAltText(alt).setTitle(title)
+                       .setHeight(height != null ? height : 0)
+                       .setWidth(width != null ? width : 0)
+                       .build();
+               if(!images.contains(image)) {
+                  images.add(image);
+               }
             }
          }
       }
