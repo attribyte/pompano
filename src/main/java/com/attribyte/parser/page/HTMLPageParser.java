@@ -77,6 +77,17 @@ public class HTMLPageParser {
       return parse(Jsoup.parse(content), defaultCanonicalLink);
    }
 
+
+   /**
+    * Parse a page from a string containing a fragment of HTML.
+    * @param content The string to parse.
+    * @param defaultCanonicalLink The default canonical link to use.
+    * @return The page.
+    */
+   public static Page parseFragment(final String content, final String defaultCanonicalLink) {
+      return parse(Jsoup.parseBodyFragment(content), defaultCanonicalLink);
+   }
+
    /**
     * Parse a page from a Jsoup document.
     * @param doc The document,
