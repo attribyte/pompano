@@ -102,110 +102,23 @@ public class HTMLPageParser {
       String bestCanonicalLink = Strings.isNullOrEmpty(canonicalLink) ? defaultCanonicalLink : canonicalLink;
       doc.setBaseUri(bestCanonicalLink);
 
-      Elements anchorElements = doc.getElementsByTag("a");
-      LinkedHashSet<Anchor> anchors = Sets.newLinkedHashSetWithExpectedSize(anchorElements.size());
-      for(Element anchorElement : anchorElements) {
-         String href = anchorElement.absUrl("href").trim();
-         if(!href.isEmpty()) {
-            String title = anchorElement.attr("title").trim();
-            String anchorText = anchorElement.text().trim();
-            Anchor anchor = new Anchor(href, title, anchorText);
-            if(!anchors.contains(anchor)) {
-               anchors.add(anchor);
-            }
-         }
-      }
+      LinkedHashSet<Anchor> anchors = Sets.newLinkedHashSetWithExpectedSize(32);
+      anchors(doc, anchors);
 
-      Elements imageElements = doc.getElementsByTag("img");
-      LinkedHashSet<Image> images = Sets.newLinkedHashSetWithExpectedSize(imageElements.size() + 4);
+      LinkedHashSet<Image> images = Sets.newLinkedHashSetWithExpectedSize(16);
       LinkedHashSet<Image> metaImages = Sets.newLinkedHashSetWithExpectedSize(4);
-
       metaImages(doc, entryMetadata, images, metaImages);
-      for(Element imageElement : imageElements) {
-         String src = imageElement.attr("src");
-         if(!src.isEmpty()) {
-            if(src.startsWith("data:image")) {
-               try {
-                  DataURI duri = new DataURI(src);
-                  if(duri.base64Encoded && !duri.data.isEmpty()) {
-                     Image image = Image.builder(duri.data.toByteArray()).setMediaType(duri.mediaType).build();
-                     if(!images.contains(image)) {
-                        images.add(image);
-                     }
+      images(doc, images);
 
-                  } //Otherwise ignore...
-
-               } catch(IllegalArgumentException iae) {
-                  //Ignore images with invalid data URI in src...
-               }
-            } else {
-               src = imageElement.absUrl("src");
-               String alt = imageElement.attr("alt");
-               String title = imageElement.attr("title");
-               Integer height = Ints.tryParse(imageElement.attr("height"));
-               Integer width = Ints.tryParse(imageElement.attr("width"));
-               Image image = Image.builder(src).setAltText(alt).setTitle(title)
-                       .setHeight(height != null ? height : 0)
-                       .setWidth(width != null ? width : 0)
-                       .build();
-               if(!images.contains(image)) {
-                  images.add(image);
-               }
-            }
-         }
-      }
-
-      Elements videoElements = doc.getElementsByTag("video");
-      LinkedHashSet<Video> videos = Sets.newLinkedHashSetWithExpectedSize(videoElements.size() + 4);
+      LinkedHashSet<Video> videos = Sets.newLinkedHashSetWithExpectedSize(8);
       LinkedHashSet<Video> metaVideos = Sets.newLinkedHashSetWithExpectedSize(4);
       ogMetaVideos(doc, videos, metaVideos);
-      for(Element videoElement : videoElements) {
-         Integer width = Ints.tryParse(videoElement.attr("width"));
-         Integer height = Ints.tryParse(videoElement.attr("height"));
-         String title = videoElement.attr("title");
-         String altText = videoElement.ownText();
-         Elements sources = videoElement.getElementsByTag("source");
-         for(Element source : sources) {
-            String src = source.absUrl("src");
-            if(!src.isEmpty()) {
-               String type = source.attr("type");
-               Video video = Video.builder(src)
-                       .setTitle(title)
-                       .setAltText(altText)
-                       .setWidth(width != null ? width : 0)
-                       .setHeight(height != null ? height : 0)
-                       .setType(type)
-                       .build();
-               if(!videos.contains(video)) {
-                  videos.add(video);
-               }
-            }
-         }
-      }
+      videos(doc, videos);
 
-      Elements audioElements = doc.getElementsByTag("audio");
-      LinkedHashSet<Audio> audios = Sets.newLinkedHashSetWithExpectedSize(videoElements.size() + 4);
+      LinkedHashSet<Audio> audios = Sets.newLinkedHashSetWithExpectedSize(4);
       LinkedHashSet<Audio> metaAudios = Sets.newLinkedHashSetWithExpectedSize(4);
       ogMetaAudio(doc, audios, metaAudios);
-      for(Element audioElement : audioElements) {
-         Elements sources = audioElement.getElementsByTag("source");
-         String title = audioElement.attr("title");
-         String altText = audioElement.ownText();
-         for(Element source : sources) {
-            String src = source.absUrl("src");
-            if(!src.isEmpty()) {
-               String type = source.attr("type");
-               Audio audio = Audio.builder(src)
-                       .setTitle(title)
-                       .setAltText(altText)
-                       .setType(type)
-                       .build();
-               if(!audios.contains(audio)) {
-                  audios.add(audio);
-               }
-            }
-         }
-      }
+      audio(doc, audios);
 
       Elements linkElements = doc.getElementsByTag("link");
       LinkedHashSet<Link> links = Sets.newLinkedHashSetWithExpectedSize(linkElements.size() + 4);
@@ -558,6 +471,129 @@ public class HTMLPageParser {
       }
 
       return null;
+   }
+
+   /**
+    * Extract unique images appearing in a document into a set.
+    * @param doc The document.
+    * @param images The set to which images are added.
+    */
+   public static void images(Document doc, final Set<Image> images) {
+      Elements imageElements = doc.getElementsByTag("img");
+      for(Element imageElement : imageElements) {
+         String src = imageElement.attr("src");
+         if(!src.isEmpty()) {
+            if(src.startsWith("data:image")) {
+               try {
+                  DataURI duri = new DataURI(src);
+                  if(duri.base64Encoded && !duri.data.isEmpty()) {
+                     Image image = Image.builder(duri.data.toByteArray()).setMediaType(duri.mediaType).build();
+                     if(!images.contains(image)) {
+                        images.add(image);
+                     }
+
+                  } //Otherwise ignore...
+
+               } catch(IllegalArgumentException iae) {
+                  //Ignore images with invalid data URI in src...
+               }
+            } else {
+               src = imageElement.absUrl("src");
+               String alt = imageElement.attr("alt");
+               String title = imageElement.attr("title");
+               Integer height = Ints.tryParse(imageElement.attr("height"));
+               Integer width = Ints.tryParse(imageElement.attr("width"));
+               Image image = Image.builder(src).setAltText(alt).setTitle(title)
+                       .setHeight(height != null ? height : 0)
+                       .setWidth(width != null ? width : 0)
+                       .build();
+               if(!images.contains(image)) {
+                  images.add(image);
+               }
+            }
+         }
+      }
+   }
+
+   /**
+    * Extract unique videos appearing in a document into a set.
+    * @param doc The document.
+    * @param videos The set to which videos are added.
+    */
+   public static void videos(final Document doc, final Set<Video> videos) {
+      Elements videoElements = doc.getElementsByTag("video");
+      for(Element videoElement : videoElements) {
+         Integer width = Ints.tryParse(videoElement.attr("width"));
+         Integer height = Ints.tryParse(videoElement.attr("height"));
+         String title = videoElement.attr("title");
+         String altText = videoElement.ownText();
+         Elements sources = videoElement.getElementsByTag("source");
+         for(Element source : sources) {
+            String src = source.absUrl("src");
+            if(!src.isEmpty()) {
+               String type = source.attr("type");
+               Video video = Video.builder(src)
+                       .setTitle(title)
+                       .setAltText(altText)
+                       .setWidth(width != null ? width : 0)
+                       .setHeight(height != null ? height : 0)
+                       .setType(type)
+                       .build();
+               if(!videos.contains(video)) {
+                  videos.add(video);
+               }
+            }
+         }
+      }
+   }
+
+
+   /**
+    * Extract unique anchors from a document.
+    * @param doc The document.
+    * @param anchors The set to which anchors are added.
+    */
+   public static void anchors(final Document doc, final Set<Anchor> anchors) {
+      Elements anchorElements = doc.getElementsByTag("a");
+      for(Element anchorElement : anchorElements) {
+         String href = anchorElement.absUrl("href").trim();
+         if(!href.isEmpty()) {
+            String title = anchorElement.attr("title").trim();
+            String anchorText = anchorElement.text().trim();
+            Anchor anchor = new Anchor(href, title, anchorText);
+            if(!anchors.contains(anchor)) {
+               anchors.add(anchor);
+            }
+         }
+      }
+   }
+
+   /**
+    * Extract unique audio streams appearing in a document into a set.
+    * @param doc The document.
+    * @param audios The set to which audio is added.
+    */
+   public static void audio(final Document doc, final Set<Audio> audios) {
+      Elements audioElements = doc.getElementsByTag("audio");
+      for(Element audioElement : audioElements) {
+         Elements sources = audioElement.getElementsByTag("source");
+         String title = audioElement.attr("title");
+         String altText = audioElement.ownText();
+         for(Element source : sources) {
+            String src = source.absUrl("src");
+            if(!src.isEmpty()) {
+               String type = source.attr("type");
+               Audio audio = Audio.builder(src)
+                       .setTitle(title)
+                       .setAltText(altText)
+                       .setType(type)
+                       .build();
+               if(!audios.contains(audio)) {
+                  audios.add(audio);
+               }
+            }
+         }
+      }
    }
 
    /**
