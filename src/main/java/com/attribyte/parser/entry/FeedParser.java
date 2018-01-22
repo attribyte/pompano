@@ -50,7 +50,7 @@ public abstract class FeedParser implements com.attribyte.parser.Parser {
       } catch(Error e) {
          throw e;
       } catch(Throwable t) {
-         return new ParseResult(name(), new ParseError("Atom Parser Failure", t));
+         return new ParseResult(name(), new ParseError("Parse Failure", t));
       }
    }
 
