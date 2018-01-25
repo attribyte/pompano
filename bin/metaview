@@ -24,7 +24,7 @@ then
   INSTALL_DIR="$(dirname "$DIR")"
 fi
 
-CLASSPATH="$INSTALL_DIR/target/pompano-$VERSION.jar"
+CLASSPATH="$INSTALL_DIR/target/pompano-$VERSION-SNAPSHOT.jar"
 
 DIST_LIB_DIR="$INSTALL_DIR/target/dependency"
 for jar in `ls $DIST_LIB_DIR/*.jar`;

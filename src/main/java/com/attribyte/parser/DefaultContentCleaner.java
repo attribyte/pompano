@@ -32,11 +32,7 @@ import static com.attribyte.parser.Util.firstMatch;
 
 public class DefaultContentCleaner implements ContentCleaner {
 
-   /**
-    * Transforms the document.
-    * @param doc The document
-    * @return the transformed document.
-    */
+   @Override
    public Document transform(Document doc) {
       String defaultProtocol = getDocumentProtocol(doc.baseUri());
       massageLinks(doc, defaultProtocol);
@@ -47,11 +43,7 @@ public class DefaultContentCleaner implements ContentCleaner {
       return doc;
    }
 
-   /**
-    * Converts the document to stored content.
-    * @param doc The document.
-    * @return The stored content.
-    */
+   @Override
    public String toCleanContent(Document doc) {
       Element mainElement = firstMatch(doc.body(), "main");
       if(mainElement == null) {
@@ -139,7 +131,7 @@ public class DefaultContentCleaner implements ContentCleaner {
    }
 
    /**
-    * Cleans links, changing adding a protocol, if missing.
+    * Cleans links, adding a protocol, if missing.
     * <p>
     *    Converts "mailto" links to {@code q.mailto} with value as {@code cite}.
     * </p>

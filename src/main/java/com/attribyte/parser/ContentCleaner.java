@@ -27,6 +27,9 @@ import static com.attribyte.parser.Util.childrenToString;
 
 public interface ContentCleaner {
 
+   /**
+    * A cleaner that does no transformation or cleaning.
+    */
    public static ContentCleaner NOOP = new ContentCleaner() {
       @Override
       public Document transform(Document doc) {
@@ -46,7 +49,7 @@ public interface ContentCleaner {
    /**
     * Transforms the content of a document.
     * <p>
-    *    The input document is modified!
+    *    The input document is modified, not copied!
     * </p>
     * @param doc The document
     * @return The input document.
@@ -56,10 +59,9 @@ public interface ContentCleaner {
    /**
     * Converts the document to a cleaned string.
     * @param doc The document.
-    * @return The stored content.
+    * @return The clean content.
     */
    public String toCleanContent(Document doc);
-
 
    /**
     * Initialize the cleaner.
@@ -77,6 +79,10 @@ public interface ContentCleaner {
     */
    static final Whitelist DEFAULT_CONTENT_WHITELIST_WITH_IMAGES = contentWhitelistWithImages();
 
+   /**
+    * The default content with images allowed.
+    * @return The content whitelist.
+    */
    static Whitelist contentWhitelistWithImages() {
       return contentWhitelist()
               .addTags("img")
@@ -84,12 +90,23 @@ public interface ContentCleaner {
               .addProtocols("img", "src", "http", "https");
    }
 
+   /**
+    * The default content whitelist.
+    * <p>
+    *    Includes tags from the basic whitelist as well as
+    *    {@code h1, h2, h3, h4, h5, h6, table, tr, td, th, tbody, tfoot, thead, col, colgroup, figure, figcaption
+    *    header, footer, aside, details, section, summary, time, article, main}
+    * </p>
+    * @return The whitelist.
+    */
    static Whitelist contentWhitelist() {
       return basicWhitelist()
               .addTags(
                       "h1", "h2", "h3", "h4", "h5", "h6",
                       "table", "tr", "td", "th", "tbody", "tfoot", "thead", "col", "colgroup", "figure", "figcaption",
-                      "header", "footer", "aside", "details", "summary", "time", "article", "main"
+                      "header", "footer",
+                      "aside", "details", "section",
+                      "summary", "time", "article", "main"
               )
               .addAttributes("time", "datetime");
    }
@@ -99,8 +116,13 @@ public interface ContentCleaner {
     */
    static final Whitelist BASIC_WHITELIST = basicWhitelist();
 
+
    /**
     * Gets the basic whitelist.
+    * <p>
+    *    Includes tags: {@code a, b, blockquote, br, cite, code, dd, dl, dt, em, i, li, ol, p, pre, q, small,
+    *    strike, del, s, strong, sub, sup, u, ul, mark, bdi}
+    * </p>
     * @return The whitelist.
     */
    static Whitelist basicWhitelist() {
@@ -108,9 +130,8 @@ public interface ContentCleaner {
       return new Whitelist()
               .addTags(
                       "a", "b", "blockquote", "br", "cite", "code", "dd", "dl", "dt", "em",
-                      "i", "li", "ol", "p", "pre", "q", "small", "strike", "strong", "sub",
-                      "sup", "u", "ul", "mark")
-
+                      "i", "li", "ol", "p", "pre", "q", "small", "strike", "del", "s", "strong", "sub",
+                      "sup", "u", "ul", "mark", "bdi")
               .addAttributes("a", "href")
               .addAttributes("blockquote", "cite")
               .addAttributes("q", "cite", "class", "alt", "title")
