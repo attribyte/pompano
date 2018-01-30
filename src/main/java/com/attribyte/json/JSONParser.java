@@ -33,6 +33,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+/**
+ * A SAX parser for JSON documents.
+ */
 public class JSONParser {
 
    private static final Attributes EMPTY_ATTRIBUTES = new Attributes() {

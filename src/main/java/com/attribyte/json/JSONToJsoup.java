@@ -27,10 +27,10 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
- * Parses JSON to a tree of <a href="http://jsoup.org/">jsoup</a> nodes.
+ * Parses JSON to a tree of <a href="https://jsoup.org/">jsoup</a> nodes.
  * <p>
  * Among other uses, the parsed tree may be queried using jsoup's
- * <a href="http://jsoup.org/apidocs/org/jsoup/select/Selector.html">Selector</a>
+ * <a href="https://jsoup.org/apidocs/org/jsoup/select/Selector.html">Selector</a>
  * system.
  * </p>
  * @author Matt Hamer, Attribyte, LLC
