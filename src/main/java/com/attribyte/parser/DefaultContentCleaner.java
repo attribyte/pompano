@@ -22,13 +22,14 @@ import com.google.common.base.Strings;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Cleaner;
+import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 
 import java.util.Properties;
 
 import static com.attribyte.parser.Util.childrenToString;
 import static com.attribyte.parser.Util.firstMatch;
-
+import static com.attribyte.parser.Whitelists.contentWhitelist;
 
 public class DefaultContentCleaner implements ContentCleaner {
 
@@ -202,4 +203,5 @@ public class DefaultContentCleaner implements ContentCleaner {
    }
 
    private boolean withImages = false;
+   private static final Whitelist DEFAULT_CONTENT_WHITELIST = contentWhitelist();
 }
