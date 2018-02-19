@@ -177,16 +177,17 @@ public class Whitelists {
     * @param allowAttributes A collection of attributes to allow.
     * @return The whitelist.
     */
-   public static Whitelist whitelist(final Collection<String> allowTags, final Collection<String> allowAttributes) {
+   public static Whitelist whitelist(final Collection<String> allowTags,
+                                     final Collection<String> allowAttributes) {
 
       return new Whitelist() {
 
          private final ImmutableSet<String> tagNames = ImmutableSet.copyOf(allowTags.stream()
-                 .map(String::toLowerCase).distinct().collect(Collectors.toList())
+                 .map(String::toLowerCase).distinct().iterator()
          );
 
          private final ImmutableSet<String> attributeNames = ImmutableSet.copyOf(allowAttributes.stream()
-                 .map(String::toLowerCase).distinct().collect(Collectors.toList())
+                 .map(String::toLowerCase).distinct().iterator()
          );
 
          @Override
