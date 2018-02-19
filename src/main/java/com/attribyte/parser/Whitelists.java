@@ -25,7 +25,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Whitelists {
@@ -94,7 +93,7 @@ public class Whitelists {
            );
    /**
     * Creates a whitelist that allows a specific set of tags and attributes (without regard to context).
-    * @param allowTags A collection of tags to allow.
+    * @param allowTags A collection of tags to allow. Add {@code 'data-*'} to allow any HTML5 data attribute.
     * @param allowAttributes A collection of attributes to allow.
     * @return The whitelist.
     */
@@ -117,18 +116,19 @@ public class Whitelists {
 
          @Override
          protected boolean	isSafeAttribute(String tagName, Element el, Attribute attr) {
-            return attributeNames.contains(attr.getKey());
+            final String attributeName = attr.getKey();
+            return attributeNames.contains(attributeName) || (attributeName.startsWith("data-") && attributeNames.contains("data-*"));
          }
       };
    }
 
    /**
     * A whitelist that includes only HTML5 block elements
-    * with {@code class} and {@code id} attributes.
+    * with {@code class}, {@code id} and {@code data-*}attributes.
     * @return The whitelist.
     */
    public static Whitelist blockElements() {
-      return whitelist(blockElementNames, ImmutableList.of("id", "class"));
+      return whitelist(blockElementNames, ImmutableList.of("id", "class", "data-*"));
    }
 
    /**
