@@ -57,7 +57,7 @@ public class AtomParserTest extends ResourceTest {
       assertEquals("2003-12-14T18:30:02Z", ISODateTimeFormat.dateTimeNoMillis().withZoneUTC().print(entry.updatedTimestamp));
       assertEquals("<p>This is the entry content.</p>", entry.cleanContent);
       assertTrue(entry.originalContent().isPresent());
-      assertEquals("<p>This is the entry content.</p>", childrenToString(entry.originalContent().get()));
+      assertEquals("<p>This is the entry content.</p>", childrenToString(entry.originalContent().get().body()));
       assertNotNull(entry.authors);
       assertEquals(1, entry.authors.size());
       Author author = entry.authors.get(0);

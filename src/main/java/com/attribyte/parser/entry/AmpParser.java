@@ -97,10 +97,10 @@ public class AmpParser implements com.attribyte.parser.Parser {
          if(contentCleaner != null) {
             Document transformedDoc = contentCleaner.transform(doc);
             entry.setCleanContent(contentCleaner.toCleanContent(transformedDoc));
-            entry.setOriginalContent(transformedDoc.body());
+            entry.setOriginalContent(transformedDoc);
          } else {
             entry.setCleanContent(defaultAMPCleaner.transform(doc).toString());
-            entry.setOriginalContent(doc.body());
+            entry.setOriginalContent(doc);
          }
 
          if(entry.getImages().size() > 0 && entry.getPrimaryImage() == null) {

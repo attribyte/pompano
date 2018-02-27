@@ -59,6 +59,8 @@ public class HTMLMetadataParser implements com.attribyte.parser.Parser {
          Document doc = Jsoup.parse(content, sourceLink, Parser.htmlParser());
 
          Entry.Builder entry = Entry.builder();
+         entry.setOriginalContent(doc);
+
          resource.setSourceLink(sourceLink);
          entry.setCanonicalLink(sourceLink);
 

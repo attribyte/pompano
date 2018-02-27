@@ -24,7 +24,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Document;
 
 import java.util.List;
 import java.util.Optional;
@@ -113,7 +113,7 @@ public class Entry {
        * Gets the (parsed) original content.
        * @return The original content as a {@code body} element.
        */
-      public Element getOriginalContent() {
+      public Document getOriginalContent() {
          return originalContent;
       }
 
@@ -122,7 +122,7 @@ public class Entry {
        * @param originalContent The original content.
        * @return A self-reference.
        */
-      public Builder setOriginalContent(final Element originalContent) {
+      public Builder setOriginalContent(final Document originalContent) {
          this.originalContent = originalContent;
          return this;
       }
@@ -455,7 +455,7 @@ public class Entry {
       private String title;
       private String summary;
       private String cleanContent;
-      private Element originalContent;
+      private Document originalContent;
       private String canonicalLink;
       private List<String> altLinks;
       private long publishedTimestamp;
@@ -482,7 +482,7 @@ public class Entry {
                  final List<Video> videos,
                  final Audio primaryAudio,
                  final List<Audio> audios,
-                 final List<String> tags, final String rights, final Element originalContent) {
+                 final List<String> tags, final String rights, final Document originalContent) {
       this.id = Strings.nullToEmpty(id);
       this.title = Strings.nullToEmpty(title);
       this.summary = Strings.nullToEmpty(summary);
@@ -624,12 +624,12 @@ public class Entry {
     * The (parsed) original content.
     * @return A copy of the (mutable) original content element, if any.
     */
-   public final Optional<Element> originalContent() {
+   public final Optional<Document> originalContent() {
       return originalContent == null ? Optional.empty() : Optional.of(originalContent.clone());
    }
 
    /**
     * The original content. Mutable, so not exposed.
     */
-   private final Element originalContent;
+   private final Document originalContent;
 }

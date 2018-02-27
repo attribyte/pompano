@@ -145,7 +145,7 @@ public class AtomParser extends FeedParser {
       String content = childText(elem, "content");
       if(!content.isEmpty()) {
          Document entryDoc = Jsoup.parseBodyFragment(content, baseUri);
-         entry.setOriginalContent(entryDoc.body());
+         entry.setOriginalContent(entryDoc);
          if(contentCleaner != null) {
             entry.setCleanContent(contentCleaner.toCleanContent(contentCleaner.transform(entryDoc)));
          } else {
