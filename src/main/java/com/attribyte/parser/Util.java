@@ -179,12 +179,47 @@ public class Util {
    /**
     * Gets the host for a link.
     * @param link The link.
-    * @return The host or {@code null} if invalid.
+    * @return The host or {@code null} if link is an invalid URL.
     */
-   public static String host(final String link) {
+   public static String host(String link) {
+
+      if(Strings.isNullOrEmpty(link)) {
+         return null;
+      }
+
+      if(!link.contains("://")) {
+         link = "http://" + link;
+      }
+
       try {
          return new URL(link).getHost();
       } catch(MalformedURLException mue) {
+         return null;
+      }
+   }
+
+   /**
+    * Gets the (top, private) domain for the link.
+    * <p>
+    *    For example: {@code test.attribyte.com -> attribyte.com, test.blogspot.com -> test.blogspot.com}.
+    * </p>
+    * @param link The link.
+    * @return The domain or {@code null} if invalid.
+    */
+   public static String domain(final String link) {
+      final String host = host(link);
+      if(host == null) {
+         return null;
+      }
+
+      try {
+         InternetDomainName idn = InternetDomainName.from(host);
+         if(idn.isPublicSuffix()) {
+            return idn.toString();
+         } else {
+            return idn.topPrivateDomain().toString();
+         }
+      } catch(IllegalArgumentException ie) {
          return null;
       }
    }
