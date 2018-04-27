@@ -67,6 +67,7 @@ public class OEmbedProvider {
       @Override
       public String toString() {
          return MoreObjects.toStringHelper(this)
+                 .add("patterns", patterns)
                  .add("schemes", schemes)
                  .add("url", url)
                  .toString();
@@ -154,7 +155,9 @@ public class OEmbedProvider {
                String domain = domain(testURL);
                if(domain != null) {
                   List<Endpoint> endpoints = builder.computeIfAbsent(domain, k -> Lists.newArrayList());
-                  endpoints.add(endpoint);
+                  if(!endpoints.contains(endpoint)) {
+                     endpoints.add(endpoint);
+                  }
                }
             });
          });
