@@ -73,6 +73,22 @@ public class OEmbedProvider {
                  .toString();
       }
 
+
+      /**
+       * Creates the oembed request URL.
+       * @param url  The input URL (should match one of the patterns).
+       * @param format The format, {@literal e.g.} json.
+       * @return The oembed URL.
+       * @throws MalformedURLException If URL is invalid.
+       */
+      public final URL buildRequestURL(final String url, final String format) throws MalformedURLException {
+         if(url.contains("{format}")) {
+            return new URL(String.format(url.replace("{format}", format) + "?url=%s", url));
+         } else {
+            return new URL(String.format(url + "?url=%s&format=%s", url, format));
+         }
+      }
+
       /**
        * Determine if a URL matches any of the supported schemes.
        * @param url The URL.
