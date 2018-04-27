@@ -33,6 +33,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static com.attribyte.parser.Util.domain;
 
@@ -51,6 +52,11 @@ public class OEmbedProvider {
       public Endpoint(final String url, final Collection<String> schemes) {
          this.schemes = schemes != null ? ImmutableList.copyOf(schemes) : ImmutableList.of();
          this.url = url;
+         List<Pattern> patterns = Lists.newArrayListWithExpectedSize(this.schemes.size());
+         for(String scheme : this.schemes) {
+            patterns.add(Pattern.compile(scheme.replace("*", ".*")));
+         }
+         this.patterns = ImmutableList.copyOf(patterns);
       }
 
       @Override
@@ -60,6 +66,25 @@ public class OEmbedProvider {
                  .add("url", url)
                  .toString();
       }
+
+      /**
+       * Determine if a URL matches any of the supported schemes.
+       * @param url The URL.
+       * @return Does this endpoint support the URL?
+       */
+      public final boolean matches(final String url) {
+         for(Pattern pattern : patterns) {
+            if(pattern.matcher(url).matches()) {
+               return true;
+            }
+         }
+         return false;
+      }
+
+      /**
+       * A list of patterns for each scheme.
+       */
+      public final ImmutableList<Pattern> patterns;
 
       /**
        * The immutable list of schemes.
@@ -107,6 +132,12 @@ public class OEmbedProvider {
     * The immutable list of endpoints.
     */
    public final ImmutableList<Endpoint> endpoints;
+
+   public static void main(String[] args) {
+      Pattern p = Pattern.compile("http://www.23hq.com/.*/photo/.*");
+      System.out.println("MATCHES? " + p.matcher("http://www.23hqx.com/test/test2/photo/12345").matches());
+
+   }
 
    /**
     * Builds a map of endpoints vs the domain they support.
