@@ -54,7 +54,12 @@ public class OEmbedProvider {
          this.url = url;
          List<Pattern> patterns = Lists.newArrayListWithExpectedSize(this.schemes.size());
          for(String scheme : this.schemes) {
-            patterns.add(Pattern.compile(scheme.replace("*", ".*")));
+            patterns.add(Pattern.compile(
+                    scheme
+                            .replace(".", "\\.")
+                            .replace("*", ".*")
+                    )
+            );
          }
          this.patterns = ImmutableList.copyOf(patterns);
       }
@@ -133,11 +138,6 @@ public class OEmbedProvider {
     */
    public final ImmutableList<Endpoint> endpoints;
 
-   public static void main(String[] args) {
-      Pattern p = Pattern.compile("http://www.23hq.com/.*/photo/.*");
-      System.out.println("MATCHES? " + p.matcher("http://www.23hqx.com/test/test2/photo/12345").matches());
-
-   }
 
    /**
     * Builds a map of endpoints vs the domain they support.
