@@ -24,6 +24,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +32,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+
+import static com.attribyte.parser.Util.domain;
 
 /**
  * An immutable oembed provider.
@@ -103,6 +107,35 @@ public class OEmbedProvider {
     * The immutable list of endpoints.
     */
    public final ImmutableList<Endpoint> endpoints;
+
+   /**
+    * Builds a map of endpoints vs the domain they support.
+    * @param providers A collection of providers.
+    * @return The map of endpoints vs domain.
+    */
+   public static ImmutableMap<String, ImmutableList<Endpoint>> domainMap(final Collection<OEmbedProvider> providers) {
+      Map<String, List<Endpoint>> builder = Maps.newHashMap();
+      providers.forEach(provider -> {
+         provider.endpoints.forEach(endpoint -> {
+            endpoint.schemes.forEach(scheme -> {
+               String testURL = scheme.replace('*', 'x');
+               testURL = testURL.replace("{format}", "json");
+               String domain = domain(testURL);
+               if(domain != null) {
+                  List<Endpoint> endpoints = builder.computeIfAbsent(domain, k -> Lists.newArrayList());
+                  endpoints.add(endpoint);
+               }
+            });
+         });
+      });
+
+      ImmutableMap.Builder<String, ImmutableList<Endpoint>> endpointMap = ImmutableMap.builder();
+      builder.forEach((k, v) -> {
+         endpointMap.put(k, ImmutableList.copyOf(v));
+      });
+      return endpointMap.build();
+   }
+
 
    /**
     * Creates a map containing the default published providers.
