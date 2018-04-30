@@ -44,14 +44,14 @@ import static com.attribyte.parser.DateParser.tryParseISO8601;
 import static com.attribyte.parser.Util.*;
 
 /**
- * Parse HTML metadata to create an entry.
+ * Parse an oEmbed JSON document to create an entry.
  * @author Matt Hamer.
  */
 public class OEmbedJSONParser implements com.attribyte.parser.Parser {
 
    @Override
    public String name() {
-      return "oembed-json";
+      return "oEmbed-json";
    }
 
    @Override
@@ -60,9 +60,10 @@ public class OEmbedJSONParser implements com.attribyte.parser.Parser {
       try {
          Resource.Builder resource = Resource.builder();
          Entry.Builder entry = Entry.builder();
-         resource.addEntry(entry.build());
 
          resource.setSourceLink(sourceLink);
+         entry.setCanonicalLink(sourceLink);
+
          JsonNode root = jsonReader.readTree(content);
 
          String title = root.path("title").asText();
@@ -121,7 +122,9 @@ public class OEmbedJSONParser implements com.attribyte.parser.Parser {
                if(!videoContent.isEmpty()) {
                   Document doc = Jsoup.parse(videoContent, sourceLink, org.jsoup.parser.Parser.htmlParser());
                   entry.setOriginalContent(doc);
-                  entry.setCleanContent(contentCleaner.toCleanContent(doc));
+                  if(contentCleaner != null) {
+                     entry.setCleanContent(contentCleaner.toCleanContent(contentCleaner.transform(doc)));
+                  }
                }
                break;
             case "rich":
@@ -129,17 +132,20 @@ public class OEmbedJSONParser implements com.attribyte.parser.Parser {
                if(!richContent.isEmpty()) {
                   Document doc = Jsoup.parse(richContent, sourceLink, org.jsoup.parser.Parser.htmlParser());
                   entry.setOriginalContent(doc);
-                  entry.setCleanContent(contentCleaner.toCleanContent(doc));
+                  if(contentCleaner != null) {
+                     entry.setCleanContent(contentCleaner.toCleanContent(contentCleaner.transform(doc)));
+                  }
                }
                break;
          }
 
+         resource.addEntry(entry.build());
          return new ParseResult(name(), resource.build());
 
       } catch(Error e) {
          throw e;
       } catch(Throwable t) {
-         return new ParseResult(name(), new ParseError("HTML AMP Parser Failure", t));
+         return new ParseResult(name(), new ParseError("oEmbed Parser Failure", t));
       }
    }
 

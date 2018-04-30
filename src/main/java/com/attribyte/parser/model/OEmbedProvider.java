@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 import static com.attribyte.parser.Util.domain;
 
 /**
- * An immutable oembed provider.
+ * An immutable oEmbed provider.
  */
 public class OEmbedProvider {
 
@@ -163,26 +163,22 @@ public class OEmbedProvider {
     */
    public static ImmutableMap<String, ImmutableList<Endpoint>> domainMap(final Collection<OEmbedProvider> providers) {
       Map<String, List<Endpoint>> builder = Maps.newHashMap();
-      providers.forEach(provider -> {
-         provider.endpoints.forEach(endpoint -> {
-            endpoint.schemes.forEach(scheme -> {
-               String testURL = scheme.replace('*', 'x');
-               testURL = testURL.replace("{format}", "json");
-               String domain = domain(testURL);
-               if(domain != null) {
-                  List<Endpoint> endpoints = builder.computeIfAbsent(domain, k -> Lists.newArrayList());
-                  if(!endpoints.contains(endpoint)) {
-                     endpoints.add(endpoint);
-                  }
+      providers.forEach(provider -> provider.endpoints.forEach(endpoint -> {
+         endpoint.schemes.forEach(scheme -> {
+            String testURL = scheme.replace('*', 'x');
+            testURL = testURL.replace("{format}", "json");
+            String domain = domain(testURL);
+            if(domain != null) {
+               List<Endpoint> endpoints = builder.computeIfAbsent(domain, k -> Lists.newArrayList());
+               if(!endpoints.contains(endpoint)) {
+                  endpoints.add(endpoint);
                }
-            });
+            }
          });
-      });
+      }));
 
       ImmutableMap.Builder<String, ImmutableList<Endpoint>> endpointMap = ImmutableMap.builder();
-      builder.forEach((k, v) -> {
-         endpointMap.put(k, ImmutableList.copyOf(v));
-      });
+      builder.forEach((k, v) -> endpointMap.put(k, ImmutableList.copyOf(v)));
       return endpointMap.build();
    }
 
