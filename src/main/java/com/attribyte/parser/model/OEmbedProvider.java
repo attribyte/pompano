@@ -25,6 +25,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.escape.Escaper;
+import com.google.common.net.UrlEscapers;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +45,11 @@ import static com.attribyte.parser.Util.domain;
 public class OEmbedProvider {
 
    public static class Endpoint {
+
+      /**
+       * Escape parameters.
+       */
+      private static Escaper PARAMETER_ESCAPER = UrlEscapers.urlFormParameterEscaper();
 
       /**
        * Creates an endpoint.
@@ -83,9 +90,9 @@ public class OEmbedProvider {
        */
       public final URL buildRequestURL(final String url, final String format) throws MalformedURLException {
          if(url.contains("{format}")) {
-            return new URL(String.format(url.replace("{format}", format) + "?url=%s", url));
+            return new URL(String.format(this.url.replace("{format}", format) + "?url=%s", PARAMETER_ESCAPER.escape(url)));
          } else {
-            return new URL(String.format(url + "?url=%s&format=%s", url, format));
+            return new URL(String.format(this.url + "?url=%s&format=%s", PARAMETER_ESCAPER.escape(url), format));
          }
       }
 

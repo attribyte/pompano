@@ -19,29 +19,17 @@
 package com.attribyte.parser.entry;
 
 import com.attribyte.parser.ContentCleaner;
-import com.attribyte.parser.DefaultAMPCleaner;
 import com.attribyte.parser.ParseError;
 import com.attribyte.parser.ParseResult;
 import com.attribyte.parser.model.Author;
 import com.attribyte.parser.model.Entry;
 import com.attribyte.parser.model.Image;
 import com.attribyte.parser.model.Resource;
-import com.attribyte.parser.model.Video;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.io.IOException;
-import java.util.Iterator;
-
-import static com.attribyte.parser.DateParser.tryParseISO8601;
-import static com.attribyte.parser.Util.*;
 
 /**
  * Parse an oEmbed JSON document to create an entry.

@@ -18,6 +18,8 @@
 
 package com.attribyte.parser;
 
+import com.google.common.base.MoreObjects;
+
 import java.util.Optional;
 
 /**
@@ -62,6 +64,15 @@ public class ParseError {
       this.message = message;
       this.exception = exception != null ? Optional.of(exception) : Optional.empty();
       this.position = position;
+   }
+
+   @Override
+   public String toString() {
+      return MoreObjects.toStringHelper(this)
+              .add("message", message)
+              .add("exception", exception)
+              .add("position", position)
+              .toString();
    }
 
    /**
