@@ -99,6 +99,25 @@ public class Image {
       }
 
       /**
+       * Gets the credit.
+       * @return The credit.
+       */
+      public String getCredit() {
+         return credit;
+      }
+
+      /**
+       * Sets the credit.
+       * @param credit The cridt.
+       * @return A self-reference.
+       */
+      public Builder setCredit(final String credit) {
+         this.credit = credit;
+         return this;
+      }
+
+
+      /**
        * Gets the width.
        * @return The width.
        */
@@ -175,19 +194,21 @@ public class Image {
        * @param link The link.
        * @param altText The alt text.
        * @param title The title.
+       * @param credit The credit.
        * @param width The width.
        * @param height The height.
        * @param mediaType The media type.
        * @param data The image data.
        */
       private Builder(final String id, final String link, final String altText,
-                      final String title, final int width, final int height,
+                      final String title, final String credit, final int width, final int height,
                       final String mediaType,
                       final byte[] data) {
          this.id = id;
          this.link = link;
          this.altText = altText;
          this.title = title;
+         this.credit = credit;
          this.width = width;
          this.height = height;
          this.mediaType = mediaType;
@@ -198,6 +219,7 @@ public class Image {
       private String link;
       private String altText;
       private String title;
+      private String credit;
       private int width;
       private int height;
       private String mediaType;
@@ -208,7 +230,7 @@ public class Image {
        * @return The image.
        */
       public Image build() {
-         return new Image(id, link, altText, title, width, height, mediaType, data);
+         return new Image(id, link, altText, title, credit, width, height, mediaType, data);
       }
    }
 
@@ -218,19 +240,21 @@ public class Image {
     * @param link The (required) link.
     * @param altText The alternate text.
     * @param title The title.
+    * @param credit The image credit.
     * @param width The width.
     * @param height The height.
     * @param mediaType The media type.
     * @param data The data.
     */
    private Image(final String id, final String link, final String altText,
-                 final String title, final int width, final int height,
+                 final String title, final String credit, final int width, final int height,
                  final String mediaType,
                  final byte[] data) {
       this.id = Strings.nullToEmpty(id);
       this.link = link;
       this.altText = Strings.nullToEmpty(altText);
       this.title = Strings.nullToEmpty(title);
+      this.credit = Strings.nullToEmpty(credit);
       this.width = width;
       this.height = height;
       this.mediaType = Strings.nullToEmpty(mediaType);
@@ -243,19 +267,21 @@ public class Image {
     * @param link The (required) link.
     * @param altText The alternate text.
     * @param title The title.
+    * @param credit The image credit.
     * @param width The width.
     * @param height The height.
     * @param mediaType The media type.
     * @param data The data.
     */
    private Image(final String id, final String link, final String altText,
-                 final String title, final int width, final int height,
+                 final String title, final String credit, final int width, final int height,
                  final String mediaType,
                  final Optional<ByteString> data) {
       this.id = Strings.nullToEmpty(id);
       this.link = link;
       this.altText = Strings.nullToEmpty(altText);
       this.title = Strings.nullToEmpty(title);
+      this.credit = Strings.nullToEmpty(credit);
       this.width = width;
       this.height = height;
       this.mediaType = Strings.nullToEmpty(mediaType);
@@ -295,7 +321,7 @@ public class Image {
     * @return The builder initialized from the existing image.
     */
    public static Builder builder(final Image image) {
-      return new Builder(image.id, image.link, image.altText, image.title, image.width, image.height, image.mediaType,
+      return new Builder(image.id, image.link, image.altText, image.title, image.credit, image.width, image.height, image.mediaType,
               image.data.map(ByteString::toByteArray).orElse(null));
    }
 
@@ -309,7 +335,7 @@ public class Image {
       if(Strings.nullToEmpty(link).trim().isEmpty()) {
          throw new UnsupportedOperationException("The image 'link' must not be null or empty");
       }
-      return new Image(link, this.id, this.altText, this.title, this.width, this.height, this.mediaType, this.data);
+      return new Image(link, this.id, this.altText, this.title, this.credit, this.width, this.height, this.mediaType, this.data);
    }
 
    @Override
@@ -319,6 +345,7 @@ public class Image {
               .add("link", link)
               .add("altText", altText)
               .add("title", title)
+              .add("credit", credit)
               .add("width", width)
               .add("height", height)
               .add("mediaType", mediaType)
@@ -360,6 +387,11 @@ public class Image {
     * A title for the image, or an empty string if none.
     */
    public final String title;
+
+   /**
+    * An image credit.
+    */
+   public final String credit;
 
    /**
     * The image width or {@code 0} if unknown.
