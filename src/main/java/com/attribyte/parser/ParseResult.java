@@ -80,6 +80,13 @@ public class ParseResult {
    }
 
    /**
+    * @return The first error, or {@code null} if none.
+    */
+   public ParseError firstError() {
+      return errors.isEmpty() ? null : errors.get(0);
+   }
+
+   /**
     * The resource, if parse was successful.
     */
    public final Optional<Resource> resource;
