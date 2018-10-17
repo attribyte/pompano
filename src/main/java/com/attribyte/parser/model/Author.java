@@ -77,11 +77,29 @@ public class Author {
       }
 
       /**
+       * Gets the display name.
+       * @return The display name.
+       */
+      public String getDisplayName() {
+         return displayName;
+      }
+
+      /**
+       * Sets the display name.
+       * @param displayName The display name.
+       * @return A self-reference.
+       */
+      public Builder setDisplayName(final String displayName) {
+         this.displayName  = displayName;
+         return this;
+      }
+
+      /**
        * Builds an immutable author.
        * @return The author.
        */
       public Author build() {
-         return new Author(id, name, email, link);
+         return new Author(id, name, email, link, displayName);
       }
 
       /**
@@ -93,6 +111,7 @@ public class Author {
          this.id = "";
          this.email = "";
          this.link = "";
+         this.displayName = "";
       }
 
       /**
@@ -101,19 +120,23 @@ public class Author {
        * @param name the name.
        * @param email the email.
        * @param link the link.
+       * @param displayName The display name.
        */
       private Builder(final String id, final String name,
-                      final String email, final String link) {
+                      final String email, final String link,
+                      final String displayName) {
          this.id = id;
          this.name = name;
          this.email = email;
          this.link = link;
+         this.displayName = displayName;
       }
 
       private String id;
       private String name;
       private String email;
       private String link;
+      private String displayName;
    }
 
    /**
@@ -122,12 +145,15 @@ public class Author {
     * @param name The name.
     * @param email The email.
     * @param link The link.
+    * @param displayName A display name.
     */
-   private Author(final String id, final String name, final String email, final String link) {
+   private Author(final String id, final String name, final String email, final String link,
+                  final String displayName) {
       this.id = Strings.nullToEmpty(id);
       this.name = name;
       this.email = Strings.nullToEmpty(email);
       this.link = Strings.nullToEmpty(link);
+      this.displayName = Strings.nullToEmpty(displayName);
    }
 
    /**
@@ -149,7 +175,7 @@ public class Author {
     * @return The builder.
     */
    public static Builder builder(final Author author) {
-      return new Builder(author.id, author.name, author.email, author.link);
+      return new Builder(author.id, author.name, author.email, author.link, author.displayName);
    }
 
    @Override
@@ -159,6 +185,7 @@ public class Author {
               .add("name", name)
               .add("email", email)
               .add("link", link)
+              .add("displayName", displayName)
               .toString();
    }
 
@@ -181,4 +208,9 @@ public class Author {
     * The author link or an empty string if none.
     */
    public final String link;
+
+   /**
+    * An author name for display.
+    */
+   public final String displayName;
 }
