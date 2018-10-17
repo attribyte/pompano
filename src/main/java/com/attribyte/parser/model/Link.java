@@ -30,6 +30,14 @@ import java.util.Objects;
 public class Link {
 
    /**
+    * Creates a link with just an href.
+    * @param href The href.
+    */
+   public Link(final String href) {
+      this(href, "","", "");
+   }
+
+   /**
     * Creates a link.
     * <ul>
     *    <li>Null values converted to empty string</li>

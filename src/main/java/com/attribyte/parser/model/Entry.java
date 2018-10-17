@@ -159,7 +159,9 @@ public class Entry {
        * @return A self-reference.
        */
       public Builder setAltLinks(final List<String> altLinks) {
-         this.altLinks = altLinks != null ? Lists.newArrayList(altLinks) : Lists.newArrayList();
+         if(altLinks != null) {
+            this.altLinks = Lists.newArrayList(altLinks);
+         }
          return this;
       }
 
@@ -226,7 +228,9 @@ public class Entry {
        * @return A self-reference.
        */
       public Builder setAuthors(final List<Author> authors) {
-         this.authors = authors != null ? Lists.newArrayList(authors) : Lists.newArrayListWithExpectedSize(4);
+         if(authors != null) {
+            this.authors = Lists.newArrayList(authors);
+         }
          return this;
       }
 
@@ -257,7 +261,9 @@ public class Entry {
        * @return A self-reference.
        */
       public Builder setImages(final List<Image> images) {
-         this.images = images != null ? Lists.newArrayList(images) : Lists.newArrayListWithExpectedSize(4);
+         if(images != null) {
+            this.images = Lists.newArrayList(images);
+         }
          return this;
       }
 
@@ -288,7 +294,9 @@ public class Entry {
        * @return A self-reference.
        */
       public Builder setVideos(final List<Video> videos) {
-         this.videos = videos != null ? Lists.newArrayList(videos) : Lists.newArrayListWithExpectedSize(4);
+         if(videos != null) {
+            this.videos = Lists.newArrayList(videos);
+         }
          return this;
       }
 
@@ -319,7 +327,9 @@ public class Entry {
        * @return A self-reference.
        */
       public Builder setTags(final List<String> tags) {
-         this.tags = tags != null ? Lists.newArrayList(tags) : Lists.newArrayListWithExpectedSize(4);
+         if(tags != null) {
+            this.tags = Lists.newArrayList(tags);
+         }
          return this;
       }
 
@@ -404,7 +414,9 @@ public class Entry {
        * @return A self-reference.
        */
       public Builder setAudios(final List<Audio> audios) {
-         this.audios = audios != null ? Lists.newArrayList(audios) : Lists.newArrayListWithExpectedSize(4);
+         if(audios != null) {
+            this.audios = Lists.newArrayList(audios);
+         }
          return this;
       }
 
@@ -440,6 +452,39 @@ public class Entry {
       }
 
       /**
+       * Gets an immutable list citations.
+       * @return The list of citations.
+       */
+      public ImmutableList<Link> getCitations() {
+         return citations != null ? ImmutableList.copyOf(citations) : ImmutableList.of();
+      }
+
+      /**
+       * Sets the list of citations.
+       * @param citations The list of citations.
+       * @return A self-reference.
+       */
+      public Builder setCitations(final List<Link> citations) {
+         if(citations != null) {
+            this.citations = Lists.newArrayList(citations);
+         }
+         return this;
+      }
+
+      /**
+       * Adds a citation.
+       * @param citation The citation to add.
+       * @return A self-reference.
+       */
+      public Builder addCitation(final Link citation) {
+         if(citations == null) {
+            citations = Lists.newArrayListWithExpectedSize(4);
+         }
+         citations.add(citation);
+         return this;
+      }
+
+      /**
        * Builds an immutable entry.
        * @return The immutable entry.
        */
@@ -448,7 +493,7 @@ public class Entry {
                  publishedTimestamp, updatedTimestamp, authors,
                  primaryImage, images, primaryVideo, videos,
                  primaryAudio, audios,
-                 tags, rights, originalContent);
+                 tags, rights, originalContent, citations);
       }
 
       private String id;
@@ -469,6 +514,7 @@ public class Entry {
       private List<Audio> audios;
       private List<String> tags;
       private String rights;
+      private List<Link> citations;
    }
 
    private Entry(final String id, final String title, final String summary, final String cleanContent,
@@ -482,7 +528,9 @@ public class Entry {
                  final List<Video> videos,
                  final Audio primaryAudio,
                  final List<Audio> audios,
-                 final List<String> tags, final String rights, final Document originalContent) {
+                 final List<String> tags,
+                 final String rights, final Document originalContent,
+                 final List<Link> citations) {
       this.id = Strings.nullToEmpty(id);
       this.title = Strings.nullToEmpty(title);
       this.summary = Strings.nullToEmpty(summary);
@@ -501,6 +549,7 @@ public class Entry {
       this.tags = tags == null ? ImmutableList.of() : ImmutableList.copyOf(tags);
       this.rights = Strings.nullToEmpty(rights);
       this.originalContent = originalContent;
+      this.citations = citations != null ? ImmutableList.copyOf(citations) : ImmutableList.of();
    }
 
    /**
@@ -532,6 +581,7 @@ public class Entry {
               .add("tags", tags)
               .add("rights", rights)
               .add("originalContent", originalContent)
+              .add("citations", citations)
               .toString();
    }
 
@@ -619,6 +669,11 @@ public class Entry {
     * The rights or an empty string if none.
     */
    public final String rights;
+
+   /**
+    * An immutable list of citations (from the entry).
+    */
+   public final ImmutableList<Link> citations;
 
    /**
     * The (parsed) original content.
