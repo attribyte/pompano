@@ -21,9 +21,12 @@ package com.attribyte.parser.model;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -396,13 +399,36 @@ public class Resource {
       }
 
       /**
+       * Sets a metadata value.
+       * @param key The key.
+       * @param value The value.
+       * @return A self-reference.
+       */
+      public Builder setMetadata(final String key, final String value) {
+         if(metadata == null) {
+            metadata = Maps.newHashMap();
+         }
+         metadata.put(key, Strings.nullToEmpty(value));
+         return this;
+      }
+
+      /**
+       * Gets previously set metadata.
+       * @param key The key.
+       * @return The value or {@code null} if none.
+       */
+      public String getMetadata(final String key) {
+         return metadata != null ? metadata.get(key) : null;
+      }
+
+      /**
        * Builds an immutable resource.
        * @return The resource.
        */
       public Resource build() {
          return new Resource(sourceLink, canonicalLink, baseLink, title, subtitle,
                  description, icon, logo, authors, tags, entries, publishedTimestamp,
-                 updatedTimestamp, rights, siteLink, feedLinks, ampLink);
+                 updatedTimestamp, rights, siteLink, feedLinks, ampLink, metadata);
       }
 
       private String sourceLink;
@@ -422,6 +448,7 @@ public class Resource {
       private String siteLink;
       private List<String> feedLinks;
       private String ampLink;
+      private Map<String, String> metadata = null;
    }
 
    private Resource(final String sourceLink, final String canonicalLink, final String baseLink,
@@ -430,7 +457,8 @@ public class Resource {
                     final List<Entry> entries, final long publishedTimestamp,
                     final long updatedTimestamp, final String rights,
                     final String siteLink,
-                    final List<String> feedLinks, final String ampLink) {
+                    final List<String> feedLinks, final String ampLink,
+                    final Map<String, String> metadata) {
       this.sourceLink = Strings.nullToEmpty(sourceLink);
       this.canonicalLink = Strings.nullToEmpty(canonicalLink);
       this.baseLink = Strings.nullToEmpty(baseLink);
@@ -448,6 +476,7 @@ public class Resource {
       this.siteLink = Strings.nullToEmpty(siteLink);
       this.feedLinks = feedLinks == null ? ImmutableList.of() : ImmutableList.copyOf(feedLinks);
       this.ampLink = ampLink != null ? Optional.of(ampLink) : Optional.empty();
+      this.metadata = metadata != null ? ImmutableMap.copyOf(metadata) : ImmutableMap.of();
    }
 
    /**
@@ -478,6 +507,7 @@ public class Resource {
               .add("siteLink", siteLink)
               .add("feedLinks", feedLinks)
               .add("ampLink", ampLink)
+              .add("metadata", metadata)
               .toString();
    }
 
@@ -565,4 +595,9 @@ public class Resource {
     * The optional amp link.
     */
    public final Optional<String> ampLink;
+
+   /**
+    * A map of arbitrary metadata associated with the resource.
+    */
+   public final ImmutableMap<String, String> metadata;
 }
