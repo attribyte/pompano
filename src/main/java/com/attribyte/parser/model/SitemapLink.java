@@ -21,9 +21,21 @@ package com.attribyte.parser.model;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 
+import java.util.Comparator;
+
 import static com.attribyte.parser.DateParser.parseISO8601;
 
 public class SitemapLink {
+
+   /**
+    * Compare links by last modified time.
+    */
+   public static final Comparator<SitemapLink> modifiedTimestampComparator = new Comparator<SitemapLink>() {
+      @Override
+      public int compare(final SitemapLink o1, final SitemapLink o2) {
+         return Long.compare(o1.lastModifiedTimestamp, o2.lastModifiedTimestamp);
+      }
+   };
 
    /**
     * Creates a sitemap link.
