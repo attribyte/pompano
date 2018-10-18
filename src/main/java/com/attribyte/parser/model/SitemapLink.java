@@ -30,12 +30,7 @@ public class SitemapLink {
    /**
     * Compare links by last modified time.
     */
-   public static final Comparator<SitemapLink> modifiedTimestampComparator = new Comparator<SitemapLink>() {
-      @Override
-      public int compare(final SitemapLink o1, final SitemapLink o2) {
-         return Long.compare(o1.lastModifiedTimestamp, o2.lastModifiedTimestamp);
-      }
-   };
+   public static final Comparator<SitemapLink> modifiedTimestampComparator = Comparator.comparingLong(o -> o.lastModifiedTimestamp);
 
    /**
     * Creates a sitemap link.
