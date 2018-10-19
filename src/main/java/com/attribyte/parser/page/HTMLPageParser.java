@@ -129,9 +129,7 @@ public class HTMLPageParser {
             String type = linkElement.attr("type");
             String title = linkElement.attr("title");
             Link link = new Link(href, rel, type, title);
-            if(!links.contains(link)) {
-               links.add(link);
-            }
+            links.add(link);
          }
       }
 
@@ -488,10 +486,7 @@ public class HTMLPageParser {
                   DataURI duri = new DataURI(src);
                   if(duri.base64Encoded && !duri.data.isEmpty()) {
                      Image image = Image.builder(duri.data.toByteArray()).setMediaType(duri.mediaType).build();
-                     if(!images.contains(image)) {
-                        images.add(image);
-                     }
-
+                     images.add(image);
                   } //Otherwise ignore...
 
                } catch(IllegalArgumentException iae) {
@@ -501,15 +496,14 @@ public class HTMLPageParser {
                src = imageElement.absUrl("src");
                String alt = imageElement.attr("alt");
                String title = imageElement.attr("title");
+               String id = imageElement.attr("id");
                Integer height = Ints.tryParse(imageElement.attr("height"));
                Integer width = Ints.tryParse(imageElement.attr("width"));
-               Image image = Image.builder(src).setAltText(alt).setTitle(title)
-                       .setHeight(height != null ? height : 0)
-                       .setWidth(width != null ? width : 0)
+               Image image = Image.builder(src).setAltText(alt).setTitle(title).setId(id)
+                       .setHeight(height != null && height > 0 ? height : 0)
+                       .setWidth(width != null && width > 0 ? width : 0)
                        .build();
-               if(!images.contains(image)) {
-                  images.add(image);
-               }
+               images.add(image);
             }
          }
       }
@@ -560,10 +554,16 @@ public class HTMLPageParser {
          if(!href.isEmpty()) {
             String title = anchorElement.attr("title").trim();
             String anchorText = anchorElement.text().trim();
-            Anchor anchor = new Anchor(href, title, anchorText);
-            if(!anchors.contains(anchor)) {
-               anchors.add(anchor);
+            if(anchorText.isEmpty()) {
+               Element img = anchorElement.select("img").first();
+               if(img != null) {
+                  anchorText = img.attr("title").trim();
+                  if(anchorText.isEmpty()) {
+                     anchorText = img.attr("alt").trim();
+                  }
+               }
             }
+            anchors.add(new Anchor(href, title, anchorText));
          }
       }
    }
