@@ -1,0 +1,63 @@
+[
+    {
+        "provider_name": "Flickr",
+        "provider_url": "http:\/\/www.flickr.com\/",
+        "endpoints": [
+            {
+                "schemes": [
+                    "https:\/\/*.flickr.com\/photos\/*"
+                ],
+                "url": "http:\/\/www.flickr.com\/services\/oembed\/",
+                "discovery": true
+            }
+        ]
+    },
+    {
+        "provider_name": "Hulu",
+        "provider_url": "http:\/\/www.hulu.com\/",
+        "endpoints": [
+            {
+                "schemes": [
+                    "http:\/\/www.hulu.com\/watch\/*",
+                    "https:\/\/www.hulu.com\/watch\/*"
+                ],
+                "url": "http:\/\/www.hulu.com\/api\/oembed.{format}"
+            }
+        ]
+    },
+    {
+        "provider_name": "Instagram",
+        "provider_url": "https:\/\/instagram.com",
+        "endpoints": [
+            {
+                "schemes": [
+                    "http:\/\/instagram.com\/p\/*",
+                    "http:\/\/instagr.am\/p\/*",
+                    "http:\/\/www.instagram.com\/p\/*",
+                    "http:\/\/www.instagr.am\/p\/*",
+                    "https:\/\/instagram.com\/p\/*",
+                    "https:\/\/instagr.am\/p\/*",
+                    "https:\/\/www.instagram.com\/p\/*",
+                    "https:\/\/www.instagr.am\/p\/*"
+                ],
+                "url": "https:\/\/api.instagram.com\/oembed",
+                "formats": [
+                    "json"
+                ]
+            }
+        ]
+    },
+    {
+        "provider_name": "Spotify",
+        "provider_url": "https:\/\/spotify.com\/",
+        "endpoints": [
+            {
+                "schemes": [
+                    "https:\/\/open.spotify.com\/*",
+                    "https:\/\/play.spotify.com\/*"
+                ],
+                "url": "https:\/\/embed.spotify.com\/oembed\/"
+            }
+        ]
+    }
+]

@@ -18,13 +18,10 @@
 
 package com.attribyte.parser;
 
-import com.attribyte.parser.entry.AmpParser;
 import com.attribyte.parser.entry.OEmbedJSONParser;
 import com.attribyte.parser.model.Author;
 import com.attribyte.parser.model.Entry;
-import com.attribyte.parser.model.Image;
 import com.attribyte.parser.model.Resource;
-import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 
 import java.io.IOException;
