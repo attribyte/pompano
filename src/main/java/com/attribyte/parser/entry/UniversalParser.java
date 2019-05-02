@@ -26,9 +26,24 @@ import com.attribyte.parser.Parser;
 
 public class UniversalParser implements Parser {
 
+   /**
+    * Creates a universal parser with unknown content type.
+    */
+   public UniversalParser() {
+      this.contentType = "";
+   }
+
+   /**
+    * Creates a universal parser with a known content type.
+    * @param contentType The content type.
+    */
+   public UniversalParser(final String contentType) {
+      this.contentType = contentType;
+   }
+
    @Override
    public ParseResult parse(final String content, final String sourceLink, final ContentCleaner contentCleaner) {
-      switch(Detector.detect(content, "")) {
+      switch(Detector.detect(content, contentType)) {
          case RSS:
             return new RSSParser().parse(content, sourceLink, contentCleaner);
          case ATOM:
@@ -47,5 +62,10 @@ public class UniversalParser implements Parser {
    public String name() {
       return "universal";
    }
+
+   /**
+    * The content type, if known.
+    */
+   private final String contentType;
 
 }
