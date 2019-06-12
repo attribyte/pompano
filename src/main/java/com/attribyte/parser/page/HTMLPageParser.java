@@ -296,9 +296,6 @@ public class HTMLPageParser {
    private static String bestTitle(final Document doc, final Element otherMetadata) {
 
       String title = firstElementText(otherMetadata, "title");
-      if(title.isEmpty()) {
-         title = firstElementText(otherMetadata, "headline");
-      }
 
       if(!title.isEmpty()) {
          return title;
