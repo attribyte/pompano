@@ -95,11 +95,29 @@ public class Author {
       }
 
       /**
+       * Gets the description.
+       * @return The description.
+       */
+      public String getDescription() {
+         return description;
+      }
+
+      /**
+       * Sets the description.
+       * @param description The description.
+       * @return A self-reference.
+       */
+      public Builder setDescription(final String description) {
+         this.description = description;
+         return this;
+      }
+
+      /**
        * Builds an immutable author.
        * @return The author.
        */
       public Author build() {
-         return new Author(id, name, email, link, displayName);
+         return new Author(id, name, email, link, displayName, description);
       }
 
       /**
@@ -112,6 +130,7 @@ public class Author {
          this.email = "";
          this.link = "";
          this.displayName = "";
+         this.description = "";
       }
 
       /**
@@ -121,15 +140,17 @@ public class Author {
        * @param email the email.
        * @param link the link.
        * @param displayName The display name.
+       * @param description The description.
        */
       private Builder(final String id, final String name,
                       final String email, final String link,
-                      final String displayName) {
+                      final String displayName, final String description) {
          this.id = id;
          this.name = name;
          this.email = email;
          this.link = link;
          this.displayName = displayName;
+         this.description = description;
       }
 
       private String id;
@@ -137,6 +158,7 @@ public class Author {
       private String email;
       private String link;
       private String displayName;
+      private String description;
    }
 
    /**
@@ -146,14 +168,16 @@ public class Author {
     * @param email The email.
     * @param link The link.
     * @param displayName A display name.
+    * @param description A description.
     */
    private Author(final String id, final String name, final String email, final String link,
-                  final String displayName) {
+                  final String displayName, final String description) {
       this.id = Strings.nullToEmpty(id);
       this.name = name;
       this.email = Strings.nullToEmpty(email);
       this.link = Strings.nullToEmpty(link);
       this.displayName = Strings.nullToEmpty(displayName);
+      this.description = Strings.nullToEmpty(description);
    }
 
    /**
@@ -175,7 +199,7 @@ public class Author {
     * @return The builder.
     */
    public static Builder builder(final Author author) {
-      return new Builder(author.id, author.name, author.email, author.link, author.displayName);
+      return new Builder(author.id, author.name, author.email, author.link, author.displayName, author.description);
    }
 
    @Override
@@ -186,6 +210,7 @@ public class Author {
               .add("email", email)
               .add("link", link)
               .add("displayName", displayName)
+              .add("description", description)
               .toString();
    }
 
@@ -213,4 +238,10 @@ public class Author {
     * An author name for display.
     */
    public final String displayName;
+
+   /**
+    * A description for the author.
+    */
+   public final String description;
+
 }
