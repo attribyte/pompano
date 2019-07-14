@@ -91,7 +91,6 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
       Map<String, Video> videos = Maps.newHashMapWithExpectedSize(4);
 
       path(contentNode, "entities").ifPresent(entitiesNode -> {
-
          path(entitiesNode, "hashtags").ifPresent(hashtagsNode -> {
             hashtagsNode.forEach(tagNode -> {
                textValue(tagNode, "text").ifPresent(tag -> {
@@ -99,27 +98,6 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
                   replaceText.put("#" + tag, hashtagMarkup(tag));
                });
             });
-         });
-
-         path(entitiesNode, "media").ifPresent(mediaNode -> {
-            String type = textValue(mediaNode, "type").orElse("");
-            String url = textValue(mediaNode, "media_url_https").orElse("");
-            String content_url = textValue(mediaNode, "url").orElse("");
-
-            if(!url.isEmpty()) {
-               switch(type) {
-                  case "photo":
-                  case "animated_gif":
-                     images.put(url, Image.builder(url).build());
-                     replaceText.put(content_url, imageMarkup(url));
-                     break;
-                  case "video":
-                     videos.put(url, Video.builder(url).build());
-                     break;
-                  default: break;
-               }
-            }
-
          });
 
          path(entitiesNode, "user_mentions").ifPresent(mentionsNode -> {
@@ -142,6 +120,31 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
             });
          });
       });
+
+      JsonNode mediaEntities = path(entryNode, "extended_entities").orElse(
+              path(entryNode, "entities").orElse(null));
+
+      if(mediaEntities != null) {
+         path(mediaEntities, "media").ifPresent(mediaNode -> {
+            String type = textValue(mediaNode, "type").orElse("");
+            String url = textValue(mediaNode, "media_url_https").orElse("");
+            String content_url = textValue(mediaNode, "url").orElse("");
+
+            if(!url.isEmpty()) {
+               switch(type) {
+                  case "photo":
+                  case "animated_gif":
+                     images.put(url, Image.builder(url).build());
+                     replaceText.put(content_url, imageMarkup(url));
+                     break;
+                  case "video":
+                     videos.put(url, Video.builder(url).build());
+                     break;
+                  default: break;
+               }
+            }
+         });
+      }
 
       path(entryNode, "user").ifPresent(userNode -> {
          textValue(userNode, "screen_name").ifPresent(name -> {
