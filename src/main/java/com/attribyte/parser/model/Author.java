@@ -113,11 +113,29 @@ public class Author {
       }
 
       /**
+       * Gets the image.
+       * @return the image.
+       */
+      public Image getImage() {
+         return image;
+      }
+
+      /**
+       * Sets the image.
+       * @param image The image.
+       * @return A self-reference.
+       */
+      public Builder setImage(final Image image) {
+         this.image = image;
+         return this;
+      }
+
+      /**
        * Builds an immutable author.
        * @return The author.
        */
       public Author build() {
-         return new Author(id, name, email, link, displayName, description);
+         return new Author(id, name, email, link, displayName, description, image);
       }
 
       /**
@@ -131,6 +149,7 @@ public class Author {
          this.link = "";
          this.displayName = "";
          this.description = "";
+         this.image = null;
       }
 
       /**
@@ -141,16 +160,19 @@ public class Author {
        * @param link the link.
        * @param displayName The display name.
        * @param description The description.
+       * @param image An image for the author.
        */
       private Builder(final String id, final String name,
                       final String email, final String link,
-                      final String displayName, final String description) {
+                      final String displayName, final String description,
+                      final Image image) {
          this.id = id;
          this.name = name;
          this.email = email;
          this.link = link;
          this.displayName = displayName;
          this.description = description;
+         this.image = image;
       }
 
       private String id;
@@ -159,6 +181,7 @@ public class Author {
       private String link;
       private String displayName;
       private String description;
+      private Image image;
    }
 
    /**
@@ -171,13 +194,14 @@ public class Author {
     * @param description A description.
     */
    private Author(final String id, final String name, final String email, final String link,
-                  final String displayName, final String description) {
+                  final String displayName, final String description, final Image image) {
       this.id = Strings.nullToEmpty(id);
       this.name = name;
       this.email = Strings.nullToEmpty(email);
       this.link = Strings.nullToEmpty(link);
       this.displayName = Strings.nullToEmpty(displayName);
       this.description = Strings.nullToEmpty(description);
+      this.image = image;
    }
 
    /**
@@ -199,7 +223,8 @@ public class Author {
     * @return The builder.
     */
    public static Builder builder(final Author author) {
-      return new Builder(author.id, author.name, author.email, author.link, author.displayName, author.description);
+      return new Builder(author.id, author.name, author.email, author.link, author.displayName, author.description,
+              author.image);
    }
 
    @Override
@@ -211,6 +236,7 @@ public class Author {
               .add("link", link)
               .add("displayName", displayName)
               .add("description", description)
+              .add("image", image)
               .toString();
    }
 
@@ -243,5 +269,10 @@ public class Author {
     * A description for the author.
     */
    public final String description;
+
+   /**
+    * An image for the author.
+    */
+   public final Image image;
 
 }

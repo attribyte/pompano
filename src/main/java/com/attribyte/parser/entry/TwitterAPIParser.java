@@ -153,6 +153,9 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
             textValue(userNode, "url").ifPresent(author::setLink);
             textValue(userNode, "id_str").ifPresent(author::setId);
             textValue(userNode, "description").ifPresent(author::setDescription);
+            textValue(userNode, "profile_image_url_https").ifPresent(url -> {
+               author.setImage(Image.builder(url).build());
+            });
             entry.addAuthor(author.build());
          });
       });
@@ -164,6 +167,10 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
       for(Map.Entry<String, String> kv : replaceText.entrySet()) {
          contentText = contentText.replace(kv.getKey(), kv.getValue());
       }
+
+      path(entryNode, "quoted_status").ifPresent(quotedStatusNode -> {
+         System.out.println("GOT IT!");
+      });
 
       Document doc = Jsoup.parse(contentText, "", org.jsoup.parser.Parser.htmlParser());
       entry.setOriginalContent(doc);
