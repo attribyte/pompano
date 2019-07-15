@@ -35,6 +35,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import java.util.Locale;
 import java.util.Map;
@@ -168,11 +169,18 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
          contentText = contentText.replace(kv.getKey(), kv.getValue());
       }
 
-      path(entryNode, "quoted_status").ifPresent(quotedStatusNode -> {
-         System.out.println("GOT IT!");
-      });
 
       Document doc = Jsoup.parse(contentText, "", org.jsoup.parser.Parser.htmlParser());
+      path(entryNode, "quoted_status").ifPresent(quotedStatusNode -> {
+         Entry quotedEntry = parseEntry(quotedStatusNode, contentCleaner).build();
+         quotedEntry.originalContent().ifPresent(quotedDoc -> {
+            Element blockquote = doc.body().appendElement("blockquote");
+            quotedDoc.body().childNodes().forEach(node -> {
+               blockquote.appendChild(node.clone());
+            });
+         });
+      });
+
       entry.setOriginalContent(doc);
       if(contentCleaner != null) {
          entry.setCleanContent(contentCleaner.toCleanContent(contentCleaner.transform(doc)));
