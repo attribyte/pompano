@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -124,26 +125,29 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
          });
       });
 
-      JsonNode mediaEntities = path(entryNode, "extended_entities").orElse(
-              path(entryNode, "entities").orElse(null));
+      List<JsonNode> mediaEntities = Lists.newArrayListWithExpectedSize(2);
+      path(entryNode, "entities").ifPresent(mediaEntities::add);
+      path(entryNode, "extended_entities").ifPresent(mediaEntities::add);
 
-      if(mediaEntities != null) {
-         path(mediaEntities, "media").ifPresent(mediaNode -> {
-            String type = textValue(mediaNode, "type").orElse("");
-            String url = textValue(mediaNode, "media_url_https").orElse("");
-            String content_url = textValue(mediaNode, "url").orElse("");
-
-            if(!url.isEmpty()) {
-               switch(type) {
-                  case "photo":
-                  case "animated_gif":
-                     images.put(url, Image.builder(url).build());
-                     replaceText.put(content_url, imageMarkup(url));
-                     break;
-                  case "video":
-                     videos.put(url, Video.builder(url).build());
-                     break;
-                  default: break;
+      for(JsonNode entityNode : mediaEntities) {
+         path(entityNode, "media").ifPresent(mediaArray -> {
+            for(JsonNode mediaNode : mediaArray) {
+               String type = textValue(mediaNode, "type").orElse("");
+               String url = textValue(mediaNode, "media_url_https").orElse("");
+               String content_url = textValue(mediaNode, "url").orElse("");
+               if(!url.isEmpty()) {
+                  switch(type) {
+                     case "photo":
+                     case "animated_gif":
+                        images.put(url, Image.builder(url).build());
+                        replaceText.put(content_url, imageMarkup(url));
+                        break;
+                     case "video":
+                        videos.put(url, Video.builder(url).build());
+                        break;
+                     default:
+                        break;
+                  }
                }
             }
          });
