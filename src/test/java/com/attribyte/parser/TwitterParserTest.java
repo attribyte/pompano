@@ -35,7 +35,7 @@ public class TwitterParserTest extends ResourceTest {
 
    @Test
    public void timeline() throws IOException {
-      ParseResult res = new TwitterAPIParser().parse(testResource("twitter_timeline1.json"), "", new DefaultContentCleaner());
+      ParseResult res = new TwitterAPIParser().parse(testResource("twitter_timeline2.json"), "", new DefaultContentCleaner());
       assertNotNull(res);
       assertFalse(res.hasErrors());
       assertTrue(res.resource.isPresent());
@@ -62,6 +62,14 @@ public class TwitterParserTest extends ResourceTest {
          entry.tags.forEach(tag -> {
             System.out.println("tag=" + tag);
          });
+      });
+
+      entry.images.forEach(image -> {
+         System.out.println("entry.image.link=" + image.link);
+      });
+
+      entry.videos.forEach(video -> {
+         System.out.println("entry.video.link=" + video.link);
       });
 
    }
