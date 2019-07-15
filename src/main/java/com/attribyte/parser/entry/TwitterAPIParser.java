@@ -97,6 +97,7 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
                textValue(tagNode, "text").ifPresent(tag -> {
                   entry.addTag(tag);
                   replaceText.put("#" + tag, hashtagMarkup(tag));
+                  replaceText.put("#" + tag.toLowerCase(), hashtagMarkup(tag));
                });
             });
          });
@@ -105,9 +106,9 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
             mentionsNode.forEach(mentionNode -> {
                textValue(mentionNode, "screen_name").ifPresent(name -> {
                   replaceText.put("@" + name, mentionMarkup(name));
+                  replaceText.put("@" + name.toLowerCase(), mentionMarkup(name));
                });
             });
-
          });
 
          path(entitiesNode, "urls").ifPresent(urlsNode -> {
