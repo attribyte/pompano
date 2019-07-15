@@ -24,6 +24,7 @@ import com.attribyte.parser.model.Resource;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Date;
 
 import static org.junit.Assert.*;
 
@@ -34,16 +35,34 @@ public class TwitterParserTest extends ResourceTest {
 
    @Test
    public void timeline() throws IOException {
-      ParseResult res = new TwitterAPIParser().parse(testResource("twitter_timeline.json"), "", new DefaultContentCleaner());
+      ParseResult res = new TwitterAPIParser().parse(testResource("twitter_timeline1.json"), "", new DefaultContentCleaner());
       assertNotNull(res);
       assertFalse(res.hasErrors());
       assertTrue(res.resource.isPresent());
       Resource parsedResource = res.resource.get();
       for(Entry entry : res.resource.get().entries) {
-         System.out.println(entry);
-         System.out.println();
-         System.out.println();
+         printEntry(entry);
       }
+   }
+
+
+   private void printEntry(final Entry entry) {
+      System.out.println("id=" + entry.id);
+      System.out.println("published=" + new Date(entry.publishedTimestamp));
+      System.out.println("content=" + entry.cleanContent);
+      entry.authors.forEach(author -> {
+         System.out.println("author.name=" + author.name);
+         System.out.println("author.displayName=" + author.displayName);
+         System.out.println("author.description=" + author.description);
+         System.out.println("author.link=" + author.link);
+         if(author.image != null) {
+            System.out.println("author.image.link=" + author.image.link);
+         }
+         entry.tags.forEach(tag -> {
+            System.out.println("tag=" + tag);
+         });
+      });
+
    }
 
 }

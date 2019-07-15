@@ -82,10 +82,10 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
       });
 
       JsonNode contentNode = path(entryNode, "extended_tweet").orElse(entryNode);
-
-      String contentText = (contentNode == entryNode ?
-              textValue(contentNode, "text") :
-              textValue(contentNode, "full_text")).orElse("");
+      String contentText = textValue(contentNode, "full_text")
+              .orElse(textValue(contentNode, "text")
+                      .orElse("")
+              );
 
       Map<String, String> replaceText = Maps.newHashMapWithExpectedSize(4);
       Map<String, Image> images = Maps.newHashMapWithExpectedSize(4);
