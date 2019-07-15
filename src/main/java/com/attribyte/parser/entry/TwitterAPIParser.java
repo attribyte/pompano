@@ -194,7 +194,7 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
    }
 
    private static final String CANONICAL_LINK_TEMPLATE = "https://twitter.com/%s/status/%s";
-   private static final String CANONICAL_LINK_NO_NAME_TEMPLATE = "https://twitter.com/status/%s";
+   private static final String CANONICAL_LINK_NO_NAME_TEMPLATE = "https://twitter.com/i/web/status/%s";
 
    /**
     * Creates the canonical link for an entry.
