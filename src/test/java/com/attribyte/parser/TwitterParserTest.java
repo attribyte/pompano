@@ -48,6 +48,7 @@ public class TwitterParserTest extends ResourceTest {
 
    private void printEntry(final Entry entry) {
       System.out.println("id=" + entry.id);
+      System.out.println("canonicalLink=" + entry.canonicalLink);
       System.out.println("published=" + new Date(entry.publishedTimestamp));
       System.out.println("content=" + entry.cleanContent);
       entry.authors.forEach(author -> {

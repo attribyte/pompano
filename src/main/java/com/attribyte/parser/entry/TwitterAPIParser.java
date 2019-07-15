@@ -37,6 +37,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -176,6 +177,7 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
          Entry quotedEntry = parseEntry(quotedStatusNode, contentCleaner).build();
          quotedEntry.originalContent().ifPresent(quotedDoc -> {
             Element blockquote = doc.body().appendElement("blockquote");
+            blockquote.attr("cite",  quotedEntry.canonicalLink);
             quotedDoc.body().childNodes().forEach(node -> {
                blockquote.appendChild(node.clone());
             });
@@ -183,11 +185,29 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
       });
 
       entry.setOriginalContent(doc);
+      setCanonicalLink(entry);
       if(contentCleaner != null) {
          entry.setCleanContent(contentCleaner.toCleanContent(contentCleaner.transform(doc)));
       }
 
       return entry;
+   }
+
+   private static final String CANONICAL_LINK_TEMPLATE = "https://twitter.com/%s/status/%s";
+   private static final String CANONICAL_LINK_NO_NAME_TEMPLATE = "https://twitter.com/status/%s";
+
+   /**
+    * Creates the canonical link for an entry.
+    * @return The canonical link.
+    */
+   private void setCanonicalLink(final Entry.Builder entry) {
+      List<Author> authors = entry.getAuthors();
+      String screenName = authors.isEmpty() ? "" : Strings.nullToEmpty(authors.get(0).name);
+      if(screenName.isEmpty()) {
+         entry.setCanonicalLink(String.format(CANONICAL_LINK_NO_NAME_TEMPLATE, entry.getId()));
+      } else {
+         entry.setCanonicalLink(String.format(CANONICAL_LINK_TEMPLATE, screenName, entry.getId()));
+      }
    }
 
    private static final String ANCHOR_TEMPLATE = "<a href=\"%s\">%s</a>";
