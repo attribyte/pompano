@@ -52,6 +52,11 @@ import java.util.Optional;
  */
 public class TwitterAPIParser implements com.attribyte.parser.Parser {
 
+   /**
+    * The source property in which the maximum seen id is saved.
+    */
+   public static String MAX_ID_META = "maxId";
+
    @Override
    public String name() {
       return "twitter";
@@ -64,13 +69,22 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
          Resource.Builder resource = Resource.builder();
          resource.setSourceLink(sourceLink);
          JsonNode root = jsonReader.readTree(content);
+         long maxId = 0L;
          if(!root.isArray()) {
             resource.addEntry(parseEntry(root, contentCleaner).build());
+            maxId = longValue(root, "id").orElse(0L);
          } else {
-            root.forEach(entryNode -> {
+            for(JsonNode entryNode : root) {
                resource.addEntry(parseEntry(entryNode, contentCleaner).build());
-            });
+               long id = longValue(entryNode, "id").orElse(0L);
+               if(id > maxId) {
+                  maxId = id;
+               }
+            }
          }
+
+         resource.setMetadata(MAX_ID_META, Long.toString(maxId));
+         resource.setSourceLink(sourceLink);
          return new ParseResult(name(), resource.build());
 
       } catch(Error e) {
