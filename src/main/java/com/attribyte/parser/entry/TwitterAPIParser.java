@@ -21,6 +21,7 @@ package com.attribyte.parser.entry;
 import com.attribyte.parser.ContentCleaner;
 import com.attribyte.parser.ParseError;
 import com.attribyte.parser.ParseResult;
+import com.attribyte.parser.model.Aspect;
 import com.attribyte.parser.model.Author;
 import com.attribyte.parser.model.Entry;
 import com.attribyte.parser.model.Image;
@@ -72,6 +73,7 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
       } catch(Error e) {
          throw e;
       } catch(Throwable t) {
+         t.printStackTrace();
          return new ParseResult(name(), new ParseError("Twitter Parser Failure", t));
       }
    }
@@ -143,7 +145,10 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
                         replaceText.put(content_url, imageMarkup(url));
                         break;
                      case "video":
-                        videos.put(url, Video.builder(url).build());
+                        Video video = buildVideo(mediaNode);
+                        if(video != null) {
+                           videos.put(url, video);
+                        }
                         break;
                      default:
                         break;
@@ -195,6 +200,48 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
       }
 
       return entry;
+   }
+
+   private Video buildVideo(final JsonNode mediaNode) {
+
+      String imageURL = textValue(mediaNode, "media_url_https").orElse("");
+      Image image = Image.builder(imageURL).build();
+      List<Video> variants = Lists.newArrayListWithExpectedSize(4);
+      String id = textValue(mediaNode, "id_str").orElse("");
+
+      path(mediaNode, "video_info").ifPresent(infoNode -> {
+
+         Optional<Aspect> aspect = path(infoNode, "aspect_ratio").flatMap(ratioNode -> {
+            if(ratioNode.size() == 2) {
+               return Optional.of(new Aspect(ratioNode.get(0).asInt(), ratioNode.get(1).asInt()));
+            } else {
+               return Optional.empty();
+            }
+         });
+
+         long durationMillis = longValue(infoNode, "duration_millis").orElse(0L);
+
+         path(infoNode, "variants").ifPresent(variantNodes -> {
+            for(JsonNode variantNode : variantNodes) {
+               textValue(variantNode, "url").ifPresent(variantURL -> {
+                  Video.Builder variant = Video.builder(variantURL);
+                  variant.setId(id);
+                  aspect.ifPresent(variant::setAspect);
+                  variant.setDurationMillis(durationMillis);
+                  variant.setImage(image);
+                  intValue(variantNode, "bitrate").ifPresent(variant::setBitrate);
+                  textValue(variantNode, "content_type").ifPresent(variant::setMediaType);
+                  variants.add(variant.build());
+               });
+            }
+         });
+      });
+
+      if(!variants.isEmpty()) {
+         return variants.get(0).withVariants(variants.subList(1, variants.size()));
+      } else {
+         return null;
+      }
    }
 
    private static final String CANONICAL_LINK_TEMPLATE = "https://twitter.com/%s/status/%s";
@@ -282,8 +329,32 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
       return path(entryNode, path).map(JsonNode::textValue);
    }
 
+   /**
+    * Gets the long value for a path, if present.
+    * @param entryNode The entry node.
+    * @param path The path.
+    * @return The long value or {@code empty}.
+    */
+   private Optional<Long> longValue(final JsonNode entryNode, final String path) {
+      return path(entryNode, path).flatMap(node -> node.canConvertToLong() ? Optional.of(node.longValue()) : Optional.empty());
+   }
 
-   static long parseTwitterTime(final String str) {
+   /**
+    * Gets the int value for a path, if present.
+    * @param entryNode The entry node.
+    * @param path The path.
+    * @return The int value or {@code empty}.
+    */
+   private Optional<Integer> intValue(final JsonNode entryNode, final String path) {
+      return path(entryNode, path).flatMap(node -> node.canConvertToInt() ? Optional.of(node.intValue()) : Optional.empty());
+   }
+
+   /**
+    * Parse the twitter time string.
+    * @param str The string.
+    * @return The timestamp.
+    */
+   private static long parseTwitterTime(final String str) {
       try {
          return !Strings.isNullOrEmpty(str) ? TWITTER_FORMAT.parseMillis(str) : System.currentTimeMillis();
       } catch(Exception e) {

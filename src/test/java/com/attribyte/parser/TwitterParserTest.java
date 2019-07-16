@@ -21,6 +21,7 @@ package com.attribyte.parser;
 import com.attribyte.parser.entry.TwitterAPIParser;
 import com.attribyte.parser.model.Entry;
 import com.attribyte.parser.model.Resource;
+import com.attribyte.parser.model.Video;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -68,10 +69,31 @@ public class TwitterParserTest extends ResourceTest {
          System.out.println("entry.image.link=" + image.link);
       });
 
-      entry.videos.forEach(video -> {
-         System.out.println("entry.video.link=" + video.link);
-      });
-
+      System.out.println();
+      entry.videos.forEach(this::printVideo);
    }
 
+   private void printVideo(final Video video) {
+      System.out.println("video.id=" + video.id);
+      System.out.println("video.link=" + video.link);
+      if(video.image != null) {
+         System.out.println("video.image.link=" + video.image.link);
+      }
+      System.out.println("video.mediaType=" + video.mediaType);
+      if(video.aspect != null) {
+         System.out.println("video.aspect=" + video.aspect);
+      }
+      System.out.println("video.bitrate=" + video.bitrate);
+      System.out.println("video.durationMillis=" + video.durationMillis);
+
+      if(!video.variants.isEmpty()) {
+         System.out.println();
+         System.out.println("Variants");
+         System.out.println("********");
+         System.out.println();
+         video.variants.forEach(this::printVideo);
+      } else {
+         System.out.println();
+      }
+   }
 }
