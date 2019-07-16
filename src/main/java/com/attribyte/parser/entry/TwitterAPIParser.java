@@ -84,7 +84,6 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
          }
 
          resource.setMetadata(MAX_ID_META, Long.toString(maxId));
-         resource.setSourceLink(sourceLink);
          return new ParseResult(name(), resource.build());
 
       } catch(Error e) {
