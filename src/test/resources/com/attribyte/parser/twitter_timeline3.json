@@ -1,0 +1,272 @@
+[
+  {
+    "created_at": "Mon Jul 15 22:34:28 +0000 2019",
+    "id": 1150896440345935872,
+    "id_str": "1150896440345935872",
+    "full_text": "RT @cool_tools: Here's our video review of an excellent pair of electrician's scissors, by @makerprojectlab and @ChickenGrylls \n\nhttps://t.…",
+    "truncated": false,
+    "display_text_range": [
+      0,
+      140
+    ],
+    "entities": {
+      "hashtags": [],
+      "symbols": [],
+      "user_mentions": [
+        {
+          "screen_name": "cool_tools",
+          "name": "Cool Tools",
+          "id": 171151283,
+          "id_str": "171151283",
+          "indices": [
+            3,
+            14
+          ]
+        },
+        {
+          "screen_name": "makerprojectlab",
+          "name": "Maker Project Lab",
+          "id": 727680333252976640,
+          "id_str": "727680333252976640",
+          "indices": [
+            91,
+            107
+          ]
+        },
+        {
+          "screen_name": "ChickenGrylls",
+          "name": "Dominic 48% Morrow",
+          "id": 108579798,
+          "id_str": "108579798",
+          "indices": [
+            112,
+            126
+          ]
+        }
+      ],
+      "urls": []
+    },
+    "source": "<a href=\"http://twitter.com\" rel=\"nofollow\">Twitter Web Client</a>",
+    "in_reply_to_status_id": null,
+    "in_reply_to_status_id_str": null,
+    "in_reply_to_user_id": null,
+    "in_reply_to_user_id_str": null,
+    "in_reply_to_screen_name": null,
+    "user": {
+      "id": 10191,
+      "id_str": "10191",
+      "name": "Mark Frauenfelder",
+      "screen_name": "Frauenfelder",
+      "location": "California, USA",
+      "description": "Research Director @iftf / Editor-in-chief @cool_tools / Co-editor @boingboing / Curator https://t.co/6N0g8JhBuN / https://t.co/8fHujPqc4n",
+      "url": "https://t.co/yFmiESUR7F",
+      "entities": {
+        "url": {
+          "urls": [
+            {
+              "url": "https://t.co/yFmiESUR7F",
+              "expanded_url": "http://markfrauenfelder.com",
+              "display_url": "markfrauenfelder.com",
+              "indices": [
+                0,
+                23
+              ]
+            }
+          ]
+        },
+        "description": {
+          "urls": [
+            {
+              "url": "https://t.co/6N0g8JhBuN",
+              "expanded_url": "http://recomendo.com",
+              "display_url": "recomendo.com",
+              "indices": [
+                88,
+                111
+              ]
+            },
+            {
+              "url": "https://t.co/8fHujPqc4n",
+              "expanded_url": "http://bookfreak.net",
+              "display_url": "bookfreak.net",
+              "indices": [
+                114,
+                137
+              ]
+            }
+          ]
+        }
+      },
+      "protected": false,
+      "followers_count": 29966,
+      "friends_count": 819,
+      "listed_count": 1657,
+      "created_at": "Mon Oct 23 23:04:26 +0000 2006",
+      "favourites_count": 2296,
+      "utc_offset": null,
+      "time_zone": null,
+      "geo_enabled": false,
+      "verified": false,
+      "statuses_count": 1039,
+      "lang": null,
+      "contributors_enabled": false,
+      "is_translator": false,
+      "is_translation_enabled": false,
+      "profile_background_color": "9AE4E8",
+      "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+      "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+      "profile_background_tile": true,
+      "profile_image_url": "http://pbs.twimg.com/profile_images/378800000030561947/950df55ca05a3021fca93b47ef68efe4_normal.jpeg",
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/378800000030561947/950df55ca05a3021fca93b47ef68efe4_normal.jpeg",
+      "profile_banner_url": "https://pbs.twimg.com/profile_banners/10191/1525725010",
+      "profile_link_color": "FF691F",
+      "profile_sidebar_border_color": "87BC44",
+      "profile_sidebar_fill_color": "E0FF92",
+      "profile_text_color": "000000",
+      "profile_use_background_image": true,
+      "has_extended_profile": false,
+      "default_profile": false,
+      "default_profile_image": false,
+      "following": true,
+      "follow_request_sent": false,
+      "notifications": false,
+      "translator_type": "none"
+    },
+    "geo": null,
+    "coordinates": null,
+    "place": null,
+    "contributors": null,
+    "retweeted_status": {
+      "created_at": "Mon Jul 15 22:33:13 +0000 2019",
+      "id": 1150896123856314368,
+      "id_str": "1150896123856314368",
+      "full_text": "Here's our video review of an excellent pair of electrician's scissors, by @makerprojectlab and @ChickenGrylls \n\nhttps://t.co/LQVXRoiz0a",
+      "truncated": false,
+      "display_text_range": [
+        0,
+        136
+      ],
+      "entities": {
+        "hashtags": [],
+        "symbols": [],
+        "user_mentions": [
+          {
+            "screen_name": "makerprojectlab",
+            "name": "Maker Project Lab",
+            "id": 727680333252976640,
+            "id_str": "727680333252976640",
+            "indices": [
+              75,
+              91
+            ]
+          },
+          {
+            "screen_name": "ChickenGrylls",
+            "name": "Dominic 48% Morrow",
+            "id": 108579798,
+            "id_str": "108579798",
+            "indices": [
+              96,
+              110
+            ]
+          }
+        ],
+        "urls": [
+          {
+            "url": "https://t.co/LQVXRoiz0a",
+            "expanded_url": "https://kk.org/cooltools/electricians-scissors/",
+            "display_url": "kk.org/cooltools/elec…",
+            "indices": [
+              113,
+              136
+            ]
+          }
+        ]
+      },
+      "source": "<a href=\"http://twitter.com\" rel=\"nofollow\">Twitter Web Client</a>",
+      "in_reply_to_status_id": null,
+      "in_reply_to_status_id_str": null,
+      "in_reply_to_user_id": null,
+      "in_reply_to_user_id_str": null,
+      "in_reply_to_screen_name": null,
+      "user": {
+        "id": 171151283,
+        "id_str": "171151283",
+        "name": "Cool Tools",
+        "screen_name": "cool_tools",
+        "location": "Pacifica, CA",
+        "description": "Reviews of tools written by readers who have actually used them",
+        "url": "https://t.co/oR4YxG5UTj",
+        "entities": {
+          "url": {
+            "urls": [
+              {
+                "url": "https://t.co/oR4YxG5UTj",
+                "expanded_url": "http://cool-tools.org",
+                "display_url": "cool-tools.org",
+                "indices": [
+                  0,
+                  23
+                ]
+              }
+            ]
+          },
+          "description": {
+            "urls": []
+          }
+        },
+        "protected": false,
+        "followers_count": 7486,
+        "friends_count": 54,
+        "listed_count": 210,
+        "created_at": "Mon Jul 26 17:46:18 +0000 2010",
+        "favourites_count": 130,
+        "utc_offset": null,
+        "time_zone": null,
+        "geo_enabled": false,
+        "verified": false,
+        "statuses_count": 2224,
+        "lang": null,
+        "contributors_enabled": false,
+        "is_translator": false,
+        "is_translation_enabled": false,
+        "profile_background_color": "000000",
+        "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_tile": false,
+        "profile_image_url": "http://pbs.twimg.com/profile_images/1087950168/TwitterCoolTools_normal.jpg",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1087950168/TwitterCoolTools_normal.jpg",
+        "profile_link_color": "ABB8C2",
+        "profile_sidebar_border_color": "000000",
+        "profile_sidebar_fill_color": "000000",
+        "profile_text_color": "000000",
+        "profile_use_background_image": false,
+        "has_extended_profile": false,
+        "default_profile": false,
+        "default_profile_image": false,
+        "following": false,
+        "follow_request_sent": false,
+        "notifications": false,
+        "translator_type": "none"
+      },
+      "geo": null,
+      "coordinates": null,
+      "place": null,
+      "contributors": null,
+      "is_quote_status": false,
+      "retweet_count": 1,
+      "favorite_count": 0,
+      "favorited": false,
+      "retweeted": false,
+      "possibly_sensitive": false,
+      "possibly_sensitive_appealable": false,
+      "lang": "en"
+    },
+    "is_quote_status": false,
+    "retweet_count": 1,
+    "favorite_count": 0,
+    "favorited": false,
+    "retweeted": false,
+    "lang": "en"
+  }
+]

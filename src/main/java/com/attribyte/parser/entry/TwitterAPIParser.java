@@ -25,6 +25,7 @@ import com.attribyte.parser.model.Aspect;
 import com.attribyte.parser.model.Author;
 import com.attribyte.parser.model.Entry;
 import com.attribyte.parser.model.Image;
+import com.attribyte.parser.model.Link;
 import com.attribyte.parser.model.Resource;
 import com.attribyte.parser.model.Video;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,12 +34,14 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -94,6 +97,7 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
       Map<String, String> replaceText = Maps.newHashMapWithExpectedSize(4);
       Map<String, Image> images = Maps.newHashMapWithExpectedSize(4);
       Map<String, Video> videos = Maps.newHashMapWithExpectedSize(4);
+      LinkedHashSet<String> citations = Sets.newLinkedHashSetWithExpectedSize(8);
 
       path(contentNode, "entities").ifPresent(entitiesNode -> {
          path(entitiesNode, "hashtags").ifPresent(hashtagsNode -> {
@@ -182,15 +186,25 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
 
 
       Document doc = Jsoup.parse(contentText, "", org.jsoup.parser.Parser.htmlParser());
+      for(Element anchor : doc.body().select("a[href]")) {
+         String href = anchor.attr("href");
+         if(href.startsWith("https://") || href.startsWith("http://")) {
+            citations.add(href);
+         }
+      }
+
       path(entryNode, "quoted_status").ifPresent(quotedStatusNode -> {
-         Entry quotedEntry = parseEntry(quotedStatusNode, contentCleaner).build();
-         quotedEntry.originalContent().ifPresent(quotedDoc -> {
-            Element blockquote = doc.body().appendElement("blockquote");
-            blockquote.attr("cite",  quotedEntry.canonicalLink);
-            quotedDoc.body().childNodes().forEach(node -> {
-               blockquote.appendChild(node.clone());
-            });
-         });
+         Entry quotedEntry = quotedEntry(doc, quotedStatusNode, contentCleaner);
+         if(!Strings.isNullOrEmpty(quotedEntry.canonicalLink)) {
+            citations.add(quotedEntry.canonicalLink);
+         }
+      });
+
+      path(entryNode, "retweeted_status").ifPresent(quotedStatusNode -> {
+         Entry quotedEntry = quotedEntry(doc, quotedStatusNode, contentCleaner);
+         if(!Strings.isNullOrEmpty(quotedEntry.canonicalLink)) {
+            citations.add(quotedEntry.canonicalLink);
+         }
       });
 
       entry.setOriginalContent(doc);
@@ -199,7 +213,21 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
          entry.setCleanContent(contentCleaner.toCleanContent(contentCleaner.transform(doc)));
       }
 
+      citations.forEach(citation -> entry.addCitation(new Link(citation)));
+
       return entry;
+   }
+
+   private Entry quotedEntry(final Document doc, final JsonNode quotedStatusNode, final ContentCleaner contentCleaner) {
+      Entry quotedEntry = parseEntry(quotedStatusNode, contentCleaner).build();
+      quotedEntry.originalContent().ifPresent(quotedDoc -> {
+         Element blockquote = doc.body().appendElement("blockquote");
+         blockquote.attr("cite",  quotedEntry.canonicalLink);
+         quotedDoc.body().childNodes().forEach(node -> {
+            blockquote.appendChild(node.clone());
+         });
+      });
+      return quotedEntry;
    }
 
    private Video buildVideo(final JsonNode mediaNode) {
