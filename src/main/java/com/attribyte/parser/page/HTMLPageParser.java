@@ -528,7 +528,7 @@ public class HTMLPageParser {
                        .setAltText(altText)
                        .setWidth(width != null ? width : 0)
                        .setHeight(height != null ? height : 0)
-                       .setType(type)
+                       .setMediaType(type)
                        .build();
                if(!videos.contains(video)) {
                   videos.add(video);
@@ -744,7 +744,7 @@ public class HTMLPageParser {
                    nextSibling.attr(propertyKey).startsWith("og:video:")) {
                switch(nextSibling.attr(propertyKey)) {
                   case "og:video:type":
-                     videoBuilder.setType(nextSibling.attr(contentKey));
+                     videoBuilder.setMediaType(nextSibling.attr(contentKey));
                      break;
                   case "og:video:width":
                      Integer width = Ints.tryParse(nextSibling.attr(contentKey));

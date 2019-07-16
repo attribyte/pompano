@@ -78,10 +78,10 @@ public class HTMLMetadataParserTest extends ResourceTest {
       assertEquals("https://twitter.com/i/videos/953362403055587329?embed_source=facebook", primaryVideo.link);
       assertEquals(652, primaryVideo.width);
       assertEquals(720, primaryVideo.height);
-      assertEquals("text/html", primaryVideo.type);
+      assertEquals("text/html", primaryVideo.mediaType);
       Video secondVideo = entry.videos.get(1);
       assertEquals("https://twitter.com/i/videos/953362403055587329-2", secondVideo.link);
-      assertEquals("text/xml", secondVideo.type);
+      assertEquals("text/xml", secondVideo.mediaType);
       assertEquals(400, secondVideo.width);
       assertEquals(800, secondVideo.height);
       assertTrue(entry.primaryAudio.isPresent());

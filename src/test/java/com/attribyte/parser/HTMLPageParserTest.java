@@ -42,13 +42,13 @@ public class HTMLPageParserTest extends ResourceTest {
       assertEquals(3, page.metaVideos.size());
       Video video1 = page.metaVideos.get(0);
       assertEquals("http://example.com/test1.mp4", video1.link);
-      assertEquals("video/mp4", video1.type);
+      assertEquals("video/mp4", video1.mediaType);
       assertEquals(100, video1.width);
       assertEquals(101, video1.height);
 
       Video video2 = page.metaVideos.get(1);
       assertEquals("http://example.com/test2.mp4", video2.link);
-      assertEquals("video/mp42", video2.type);
+      assertEquals("video/mp42", video2.mediaType);
       assertEquals(200, video2.width);
       assertEquals(201, video2.height);
       Video video3 = page.metaVideos.get(2);
@@ -61,14 +61,14 @@ public class HTMLPageParserTest extends ResourceTest {
       assertEquals(1, page.metaVideos.size());
       Video video1 = page.metaVideos.get(0);
       assertEquals("https://example.com/test1.mp4", video1.link);
-      assertEquals("video/mp4", video1.type);
+      assertEquals("video/mp4", video1.mediaType);
       assertEquals(100, video1.width);
       assertEquals(101, video1.height);
 
       assertEquals(3, page.videos.size());
       Video video2 = page.videos.get(1);
       assertEquals("https://example.com/movie.mp4", video2.link);
-      assertEquals("video/mp4", video2.type);
+      assertEquals("video/mp4", video2.mediaType);
       assertEquals(200, video2.width);
       assertEquals(200, video2.height);
       assertEquals("The alt text", video2.altText);
@@ -76,7 +76,7 @@ public class HTMLPageParserTest extends ResourceTest {
 
       Video video3 = page.videos.get(2);
       assertEquals("https://example.com/movie.ogg", video3.link);
-      assertEquals("video/ogg", video3.type);
+      assertEquals("video/ogg", video3.mediaType);
       assertEquals(200, video3.width);
       assertEquals(200, video3.height);
       assertEquals("The alt text", video3.altText);
