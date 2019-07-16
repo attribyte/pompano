@@ -122,10 +122,16 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
          path(entitiesNode, "urls").ifPresent(urlsNode -> {
             urlsNode.forEach(urlNode -> {
                String url = textValue(urlNode, "url").orElse("");
-               String display = textValue(urlNode, "display_url").orElse("");
-               String expanded = textValue(urlNode, "expanded_url").orElse("");
-               if(!url.isEmpty() && !display.isEmpty() && !expanded.isEmpty()) {
-                  replaceText.put(url, linkMarkup(expanded, display));
+               if(!url.isEmpty()) {
+                  citations.add(url);
+                  String display = textValue(urlNode, "display_url").orElse("");
+                  String expanded = textValue(urlNode, "expanded_url").orElse("");
+                  if(!expanded.isEmpty()) {
+                     citations.add(expanded);
+                     if(!display.isEmpty()) {
+                        replaceText.put(url, linkMarkup(expanded, display));
+                     }
+                  }
                }
             });
          });
