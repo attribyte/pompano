@@ -45,7 +45,7 @@ public class ParseResult {
     * @param error The error.
     */
    public ParseResult(final String parserName, final ParseError error) {
-      this(parserName, ImmutableList.of());
+      this(parserName, ImmutableList.of(error));
    }
 
    /**
