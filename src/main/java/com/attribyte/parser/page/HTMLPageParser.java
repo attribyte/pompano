@@ -583,7 +583,7 @@ public class HTMLPageParser {
                Audio audio = Audio.builder(src)
                        .setTitle(title)
                        .setAltText(altText)
-                       .setType(type)
+                       .setMediaType(type)
                        .build();
                if(!audios.contains(audio)) {
                   audios.add(audio);
@@ -812,7 +812,7 @@ public class HTMLPageParser {
                     nextSibling.attr(propertyKey).startsWith("og:audio:")) {
                switch(nextSibling.attr(propertyKey)) {
                   case "og:audio:type":
-                     audioBuilder.setType(nextSibling.attr(contentKey));
+                     audioBuilder.setMediaType(nextSibling.attr(contentKey));
                      break;
                }
             }

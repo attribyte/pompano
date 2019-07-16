@@ -89,12 +89,12 @@ public class HTMLPageParserTest extends ResourceTest {
       assertEquals(1, page.metaAudios.size());
       Audio audio1 = page.metaAudios.get(0);
       assertEquals("https://example.com/test1.mp3", audio1.link);
-      assertEquals("audio/mp3", audio1.type);
+      assertEquals("audio/mp3", audio1.mediaType);
 
       assertEquals(2, page.audios.size());
       Audio audio2 = page.audios.get(1);
       assertEquals("https://example.com/test2.mp3", audio2.link);
-      assertEquals("audio/mp3", audio2.type);
+      assertEquals("audio/mp3", audio2.mediaType);
       assertEquals("The alt text", audio2.altText);
    }
 

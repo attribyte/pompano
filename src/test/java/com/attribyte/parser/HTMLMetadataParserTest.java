@@ -86,6 +86,6 @@ public class HTMLMetadataParserTest extends ResourceTest {
       assertEquals(800, secondVideo.height);
       assertTrue(entry.primaryAudio.isPresent());
       assertEquals("https://example.com/test.mp3", entry.primaryAudio.get().link);
-      assertEquals("audio/mp3", entry.primaryAudio.get().type);
+      assertEquals("audio/mp3", entry.primaryAudio.get().mediaType);
    }
 }

@@ -98,17 +98,17 @@ public class Audio {
        * Gets the type.
        * @return The type.
        */
-      public String getType() {
-         return type;
+      public String getMediaType() {
+         return mediaType;
       }
 
       /**
        * Sets the type.
-       * @param type The type.
+       * @param mediaType The media type.
        * @return A self-reference.
        */
-      public Builder setType(final String type) {
-         this.type = type;
+      public Builder setMediaType(final String mediaType) {
+         this.mediaType = mediaType;
          return this;
       }
 
@@ -126,30 +126,30 @@ public class Audio {
        * @param link The link.
        * @param altText The alt text.
        * @param title The title.
-       * @param type The type.
+       * @param mediaType The media type.
        */
       private Builder(final String id, final String link, final String altText,
                       final String title,
-                      final String  type) {
+                      final String  mediaType) {
          this.id = id;
          this.link = link;
          this.altText = altText;
          this.title = title;
-         this.type = type;
+         this.mediaType = mediaType;
       }
 
       private String id;
       private String link;
       private String altText;
       private String title;
-      private String type;
+      private String mediaType;
 
       /**
        * Builds an immutable audio stream.
        * @return The audio.
        */
       public Audio build() {
-         return new Audio(id, link, altText, title, type);
+         return new Audio(id, link, altText, title, mediaType);
       }
    }
 
@@ -159,16 +159,16 @@ public class Audio {
     * @param link The (required) link.
     * @param altText The alternate text.
     * @param title The title.
-    * @param type The type.
+    * @param mediaType The media type.
     */
    private Audio(final String id, final String link, final String altText,
                  final String title,
-                 final String type) {
+                 final String mediaType) {
       this.id = Strings.nullToEmpty(id);
       this.link = link;
       this.altText = Strings.nullToEmpty(altText);
       this.title = Strings.nullToEmpty(title);
-      this.type = Strings.nullToEmpty(type);
+      this.mediaType = Strings.nullToEmpty(mediaType);
    }
 
    /**
@@ -190,7 +190,7 @@ public class Audio {
     * @return The builder initialized from the existing audio.
     */
    public static Builder builder(final Audio audio) {
-      return new Builder(audio.id, audio.link, audio.altText, audio.title, audio.type);
+      return new Builder(audio.id, audio.link, audio.altText, audio.title, audio.mediaType);
    }
 
    /**
@@ -203,21 +203,21 @@ public class Audio {
       if(Strings.nullToEmpty(link).trim().isEmpty()) {
          throw new UnsupportedOperationException("The audio 'link' must not be null or empty");
       }
-      return new Audio(link, this.id, this.altText, this.title, this.type);
+      return new Audio(link, this.id, this.altText, this.title, this.mediaType);
    }
 
    /**
     * Creates a copy of this audio stream with a new link and type.
     * @param link The new link.
-    * @param type The new type.
+    * @param mediaType The new media type.
     * @return The new audio.
     * @throws UnsupportedOperationException If the specified link is {@code null} or empty.
     */
-   public Audio withNewLink(final String link, final String type) throws UnsupportedOperationException {
+   public Audio withNewLink(final String link, final String mediaType) throws UnsupportedOperationException {
       if(Strings.nullToEmpty(link).trim().isEmpty()) {
          throw new UnsupportedOperationException("The audio 'link' must not be null or empty");
       }
-      return new Audio(link, this.id, this.altText, this.title, type);
+      return new Audio(link, this.id, this.altText, this.title, mediaType);
    }
 
    @Override
@@ -227,7 +227,7 @@ public class Audio {
               .add("link", link)
               .add("altText", altText)
               .add("title", title)
-              .add("type", type)
+              .add("mediaType", mediaType)
               .toString();
    }
 
@@ -269,5 +269,5 @@ public class Audio {
    /**
     * The audio type or an empty string if none.
     */
-   public final String type;
+   public final String mediaType;
 }
