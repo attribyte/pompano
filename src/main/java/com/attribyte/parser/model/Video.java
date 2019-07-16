@@ -396,7 +396,7 @@ public class Video {
       if(Strings.nullToEmpty(link).trim().isEmpty()) {
          throw new UnsupportedOperationException("The video 'link' must not be null or empty");
       }
-      return new Video(link, this.id, this.altText, this.title, this.width, this.height,
+      return new Video(this.id, link, this.altText, this.title, this.width, this.height,
               this.mediaType, this.bitrate, this.durationMillis, this.aspect, this.image,
               this.variants);
    }
@@ -412,7 +412,7 @@ public class Video {
       if(Strings.nullToEmpty(link).trim().isEmpty()) {
          throw new UnsupportedOperationException("The video 'link' must not be null or empty");
       }
-      return new Video(link, this.id, this.altText, this.title, this.width, this.height,
+      return new Video(this.id, link, this.altText, this.title, this.width, this.height,
               mediaType, this.bitrate, this.durationMillis, this.aspect, this.image,
               this.variants);
    }
@@ -429,7 +429,7 @@ public class Video {
       if(Strings.nullToEmpty(link).trim().isEmpty()) {
          throw new UnsupportedOperationException("The video 'link' must not be null or empty");
       }
-      return new Video(link, this.id, this.altText, this.title, this.width, this.height,
+      return new Video(this.id, link, this.altText, this.title, this.width, this.height,
               mediaType, bitrate, this.durationMillis, this.aspect, this.image, this.variants);
    }
 
@@ -439,7 +439,7 @@ public class Video {
     * @return The new video.
     */
    public Video withVariants(final Collection<Video> variants) {
-      return new Video(link, this.id, this.altText, this.title, this.width, this.height,
+      return new Video(this.id, this.link, this.altText, this.title, this.width, this.height,
               mediaType, bitrate, this.durationMillis, this.aspect, this.image, variants);
    }
 
