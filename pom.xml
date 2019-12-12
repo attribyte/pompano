@@ -10,7 +10,7 @@
     <name>Pompano Page Parsers</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jacksonVersion>2.9.9</jacksonVersion>
+        <jacksonVersion>2.9.10</jacksonVersion>
     </properties>
     <description>
         Pompano is a suite of parsers for various feed and page formats.
@@ -111,15 +111,8 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>[2.9.10,)</version>
-        </dependency>
-        <!--
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
             <version>${jacksonVersion}</version>
         </dependency>
-        -->
     </dependencies>
     <build>
         <plugins>
