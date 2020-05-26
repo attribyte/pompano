@@ -2,21 +2,41 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <distributionManagement>
+        <snapshotRepository>
+            <id>attribyte-private-snapshot</id>
+            <name>Attribyte Private Snapshot</name>
+            <url>https://maven.pkg.github.com/attribyte/private-repo/</url>
+            <uniqueVersion>true</uniqueVersion>
+        </snapshotRepository>
+        <repository>
+            <id>attribyte-private-release</id>
+            <name>Attribyte Private Release</name>
+            <url>https://maven.pkg.github.com/attribyte/private-repo/</url>
+            <uniqueVersion>false</uniqueVersion>
+        </repository>
+    </distributionManagement>
+    <repositories>
+        <repository>
+            <id>attribyte-private-repo</id>
+            <name>Attribyte Private Repo</name>
+            <url>https://maven.pkg.github.com/attribyte/private-repo/</url>
+        </repository>
+    </repositories>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.attribyte</groupId>
     <artifactId>pompano</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.2</version>
     <packaging>jar</packaging>
     <name>Pompano Page Parsers</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jacksonVersion>2.9.10</jacksonVersion>
-        <jacksonDatabindVersion>2.9.10.3</jacksonDatabindVersion>
+        <jacksonDatabindVersion>2.9.10.4</jacksonDatabindVersion>
     </properties>
     <description>
         Pompano is a suite of parsers for various feed and page formats.
     </description>
-    <url>https://www.attribyte.org/oss#pompano</url>
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
@@ -36,42 +56,6 @@
         <developerConnection>scm:git:git@github.com:attribyte/pompano.git</developerConnection>
         <url>git@github.com:attribyte/pompano.git</url>
     </scm>
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-    <profiles>
-        <profile>
-            <id>sign</id>
-            <activation>
-                <property>
-                    <!-- -Drelease=true  -->
-                    <name>release</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -81,7 +65,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>2.4.1</version>
+            <version>[2.4.1,)</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
@@ -118,17 +102,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>false</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.7.0</version>
@@ -141,51 +114,15 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <show>protected</show>
-                    <nohelp>true</nohelp>
-                </configuration>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.0.0-M1</version>
                 <executions>
                     <execution>
-                        <id>attach-javadocs</id>
+                        <id>default-deploy</id>
+                        <phase>deploy</phase>
                         <goals>
-                            <goal>jar</goal>
+                            <goal>deploy</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.0.2</version>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>false</overWriteSnapshots>
-                            <overWriteIfNewer>true</overWriteIfNewer>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
