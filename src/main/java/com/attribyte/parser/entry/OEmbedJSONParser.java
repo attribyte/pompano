@@ -25,11 +25,15 @@ import com.attribyte.parser.model.Author;
 import com.attribyte.parser.model.Entry;
 import com.attribyte.parser.model.Image;
 import com.attribyte.parser.model.Resource;
+import com.attribyte.parser.model.Video;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.primitives.Ints;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Selector;
 
 /**
  * Parse an oEmbed JSON document to create an entry.
@@ -112,6 +116,23 @@ public class OEmbedJSONParser implements com.attribyte.parser.Parser {
                   entry.setOriginalContent(doc);
                   if(contentCleaner != null) {
                      entry.setCleanContent(contentCleaner.toCleanContent(contentCleaner.transform(doc)));
+                  }
+
+                  Element srcElem = Selector.selectFirst("[src]", doc.body());
+                  if(srcElem != null) {
+                     String url = srcElem.attr("src");
+                     if(!url.isEmpty()) {
+                        Video.Builder video = Video.builder(url);
+                        Integer width = Ints.tryParse(srcElem.attr("width"));
+                        if(width != null) {
+                           video.setWidth(width);
+                        }
+                        Integer height = Ints.tryParse(srcElem.attr("height"));
+                        if(height != null) {
+                           video.setHeight(height);
+                        }
+                        entry.setPrimaryVideo(video.build());
+                     }
                   }
                }
                break;
