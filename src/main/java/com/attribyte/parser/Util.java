@@ -301,4 +301,43 @@ public class Util {
       }
       return true;
    }
+
+
+   /**
+    * Creates a slug from a string.
+    * <p>
+    *    Does not strip markup.
+    * </p>
+    * @param str The string.
+    * @return The slug for the string.
+    */
+   public static String slugify(final String str) {
+      StringBuilder buf = new StringBuilder();
+      boolean lastWasDash = false;
+      for(char ch : str.toLowerCase().trim().toCharArray()) {
+         if(Character.isLetterOrDigit(ch)) {
+            buf.append(ch);
+            lastWasDash = false;
+         } else {
+            if(!lastWasDash) {
+               buf.append("-");
+               lastWasDash = true;
+            }
+         }
+      }
+
+      String slug = buf.toString();
+      if(slug.length() == 0) {
+         return "";
+      }
+
+      if(slug.charAt(0) == '-') {
+         slug = slug.substring(1);
+      }
+      if(slug.length() > 0 && slug.charAt(slug.length() - 1) == '-') {
+         slug = slug.substring(0, slug.length() - 1);
+      }
+
+      return slug;
+   }
 }
