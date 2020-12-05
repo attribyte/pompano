@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Set;
 
 import static com.attribyte.parser.DateParser.*;
+import static com.attribyte.parser.Util.httpURL;
+import static com.attribyte.parser.Util.protocol;
 
 public class AtomParser extends FeedParser {
 
@@ -73,16 +75,16 @@ public class AtomParser extends FeedParser {
          resource.setDescription(description);
       }
 
-      /* FIX! This finds alt links in entries.
-      List<Element> altElements = doc.select("link[rel=alternate]");
+      String protocol = protocol(resource.getSourceLink());
+
+      List<Element> altElements = doc.select("feed > link[rel=alternate]");
       if(altElements.size() > 0) {
          Element altLink = altElements.get(0);
-         String link = Strings.nullToEmpty(altLink.attr("href")).trim();
-         if(link.startsWith("http://") || link.startsWith("https://") || link.startsWith("//")) {
+         String link = httpURL(altLink.attr("href"), protocol);
+         if(link != null) {
             resource.setSiteLink(link);
          }
       }
-      */
    }
 
    @Override
@@ -90,11 +92,12 @@ public class AtomParser extends FeedParser {
 
       Entry.Builder entry = Entry.builder();
       entry.setTitle(childText(elem, "title"));
+      String protocol = protocol(baseUri);
 
       List<Element> altLinks = elem.select("link[rel=alternate]");
       for(Element altLink : altLinks) {
-         String href = altLink.attr("href").trim();
-         if(!href.isEmpty()) {
+         String href = httpURL(altLink.attr("href"), protocol);
+         if(href != null) {
             entry.setCanonicalLink(href);
             break;
          }
@@ -102,8 +105,11 @@ public class AtomParser extends FeedParser {
 
       Elements feedburnerLinks = elem.getElementsByTag("feedburner:origlink");
       for(Element flink : feedburnerLinks) {
-         String href = flink.text().trim();
-         if(!href.isEmpty()) {
+         String href = httpURL(flink.text(), protocol);
+         if(href != null) {
+            if(entry.getCanonicalLink() != null) {
+               entry.addAltLink(entry.getCanonicalLink());
+            }
             entry.setCanonicalLink(href);
             break;
          }
@@ -173,10 +179,7 @@ public class AtomParser extends FeedParser {
          if((rel.equalsIgnoreCase("enclosure"))) {
             boolean isAllowedImage = isAllowedEnclosureImage(linkElem.attr("type"));
             if(isAllowedImage) {
-               String url = linkElem.attr("href");
-               if(!Strings.isNullOrEmpty(url) && (url.startsWith("http://") || url.startsWith("https://"))) {
-                  entry.addImage(Image.builder(url).build());
-               }
+               addImage(entry, linkElem.attr("href"), protocol);
             }
          }
       }

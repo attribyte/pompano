@@ -29,6 +29,7 @@ import com.google.common.primitives.Ints;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 
 import java.util.List;
@@ -61,15 +62,10 @@ public class RSSParser extends FeedParser {
          resource.setUpdatedTimestamp(updatedTimestamp);
       }
 
-      String link = childText(doc, "link");
-
-      if(link.startsWith("http://") || link.startsWith("https://")) {
+      String protocol = protocol(resource.getSourceLink());
+      String link = httpURL(childText(doc, "link"), protocol);
+      if(link != null) {
          resource.setSiteLink(link);
-      } else if(link.startsWith("//")) {
-         String protocol = protocol(resource.getSourceLink());
-         if(protocol != null) {
-            resource.setSiteLink(protocol + ":" + link);
-         }
       }
 
       Element image = firstMatch(doc, "image");
@@ -78,32 +74,39 @@ public class RSSParser extends FeedParser {
       }
 
       if(image != null) {
-         String imageLink = childText(image, "link");
+         String imageLink = httpURL(childText(image, "link"), protocol);
 
-         if(imageLink.isEmpty()) {
-            imageLink = childText(image, "url");
+         if(imageLink == null) {
+            imageLink = httpURL(childText(image, "url"), protocol);
          }
 
-         if(imageLink.isEmpty()) {
-            imageLink = image.attr("rdf:resource");
+         if(imageLink == null) {
+            imageLink = httpURL(image.attr("rdf:resource"), protocol);
          }
 
-         if(!imageLink.isEmpty()) {
+         if(imageLink != null) {
             resource.setIcon(Image.builder(imageLink).build());
          }
       }
    }
 
    @Override
-   protected Entry.Builder parseEntry(final Element item, final ContentCleaner contentCleaner, final String baseUri) {
-
+   protected Entry.Builder parseEntry(final Element item,
+                                      final ContentCleaner contentCleaner,
+                                      final String baseUri) {
       Entry.Builder entry = Entry.builder();
 
       entry.setTitle(childText(item, "title"));
-
-      String content = childText(item, "description");
-      if(content.isEmpty()) {
-         content = childText(item, "content:encoded");
+      String description = childText(item, "description");
+      String contentEncoded = childText(item, "content:encoded");
+      final String content;
+      if(contentEncoded.length() > description.length()) {
+         if(!description.isEmpty()) {
+            entry.setSummary(Jsoup.clean(description, Whitelist.basic()));
+         }
+         content = contentEncoded;
+      } else {
+         content = description;
       }
 
       if(!content.isEmpty()) {
@@ -116,17 +119,21 @@ public class RSSParser extends FeedParser {
          }
       }
 
+      String protocol = protocol(baseUri);
       Element guidElem = firstChild(item, "guid");
-      String linkText = childText(item, "link").trim();
-      if(linkText.isEmpty() && guidElem != null && !guidElem.attr("isPermalink").equalsIgnoreCase("false")) {
-         linkText = guidElem.text().trim();
+      String linkText = httpURL(childText(item, "link"), protocol);
+      if(linkText == null && guidElem != null && !guidElem.attr("isPermalink").equalsIgnoreCase("false")) {
+         linkText = httpURL(guidElem.text(), protocol);
       }
-      entry.setCanonicalLink(linkText);
 
-      String origLinkText = childText(item, "feedburner:origlink").trim();
-      if(!origLinkText.isEmpty()) {
+      if(linkText != null) {
+         entry.setCanonicalLink(linkText);
+      }
+
+      String origLinkText = httpURL(childText(item, "feedburner:origlink"), protocol);
+      if(origLinkText != null) {
          entry.setCanonicalLink(origLinkText);
-         if(!linkText.isEmpty()) {
+         if(linkText != null) {
             entry.addAltLink(linkText);
          }
       }
@@ -173,7 +180,7 @@ public class RSSParser extends FeedParser {
               .collect(Collectors.toList());
       entry.setTags(categories);
 
-      addMedia(item, entry);
+      addMedia(item, entry, protocol);
       return entry;
    }
 
@@ -212,8 +219,11 @@ public class RSSParser extends FeedParser {
     * Adds media elements.
     * @param item  The item element.
     * @param entry The entry to which media is added.
+    * @param protocol Use for protocol-less URLs.
     */
-   private static void addMedia(final Element item, final Entry.Builder entry) {
+   private static void addMedia(final Element item,
+                                final Entry.Builder entry,
+                                final String protocol) {
 
       List<Element> mediaContentElements = item.getElementsByTag("media:content");
       for(Element contentElem : mediaContentElements) {
@@ -224,9 +234,8 @@ public class RSSParser extends FeedParser {
          }
 
          if(mediumAttr.equalsIgnoreCase("image")) {
-            String url = contentElem.attr("url");
-            if(!Strings.isNullOrEmpty(url) && (url.startsWith("http://") || url.startsWith("https://"))) {
-               Image.Builder builder = Image.builder(url);
+            Image.Builder builder = image(contentElem.attr("url"), protocol);
+            if(builder != null) {
                String title = childText(contentElem, "media:title");
                if(!Strings.isNullOrEmpty(title)) {
                   builder.setTitle(title);
@@ -242,31 +251,24 @@ public class RSSParser extends FeedParser {
                   builder.setHeight(height);
                }
 
-               entry.addImage(builder.build());
-               if(entry.getPrimaryImage() == null) {
-                  entry.setPrimaryImage(builder.build());
-               }
+               addImage(entry, builder);
             }
          }
       }
 
       //<enclosure url="http://icdn4.digitaltrends.com/image/img_0005-100x100-c.jpg" length="0" type="image/png"/>
-
       Elements enclosureElements = item.getElementsByTag("enclosure");
-      if(enclosureElements != null && enclosureElements.size() > 0) {
-         for(Element enclosureElem : enclosureElements) {
-            String type = enclosureElem.attr("type");
-            if(type != null && imageEnclosureTypes.contains(type.toLowerCase().trim())) {
-               String url = enclosureElem.attr("url");
-               if(!Strings.isNullOrEmpty(url) && (url.startsWith("http://") || url.startsWith("https://"))) {
-                  Image.Builder builder = Image.builder(url);
-                  entry.addImage(builder.build());
-                  if(entry.getPrimaryImage() == null) {
-                     entry.setPrimaryImage(builder.build());
-                  }
-               }
-            }
+      for(Element enclosureElem : enclosureElements) {
+         String type = enclosureElem.attr("type");
+         if(type != null && imageEnclosureTypes.contains(type.toLowerCase().trim())) {
+            addImage(entry, enclosureElem.attr("url"), protocol);
          }
+      }
+
+      //<g:image_link>https://cdn.apartmenttherapy.info/image/upload/f_auto,q_auto:eco,c_fill,g_auto,w_660/stock/GettyImages-898305702</g:image_link>
+      Elements contentMediaElements = item.getElementsByTag("g:image_link");
+      for(Element contentMediaElement : contentMediaElements) {
+         addImage(entry, contentMediaElement.text(), protocol);
       }
    }
 

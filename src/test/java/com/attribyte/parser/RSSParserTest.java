@@ -23,9 +23,11 @@ import com.attribyte.parser.model.Entry;
 import com.attribyte.parser.model.Resource;
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
@@ -35,6 +37,16 @@ import static org.junit.Assert.*;
  * @author Matt Hamer
  */
 public class RSSParserTest extends ResourceTest {
+
+   private static String file(final String filename) throws IOException{
+      return new String(Files.toByteArray(new File(filename)), Charsets.UTF_8);
+   }
+
+   public void big() throws IOException {
+      ParseResult res = new RSSParser().parse(file("/home/matt/test/rww_rss.xml"), "https://readwrite.com/feed/",
+              new DefaultContentCleaner());
+      System.out.println(res.toString());
+   }
 
    @Test
    public void minimal() throws IOException {

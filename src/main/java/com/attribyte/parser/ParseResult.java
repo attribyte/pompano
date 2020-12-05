@@ -19,6 +19,7 @@
 package com.attribyte.parser;
 
 import com.attribyte.parser.model.Resource;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -69,6 +70,16 @@ public class ParseResult {
       this.parserName = parserName;
       this.resource = Optional.of(resource);
       this.errors = errors != null ? ImmutableList.copyOf(errors) : ImmutableList.of();
+   }
+
+
+   @Override
+   public String toString() {
+      return MoreObjects.toStringHelper(this)
+              .add("resource", resource)
+              .add("errors", errors)
+              .add("parserName", parserName)
+              .toString();
    }
 
    /**

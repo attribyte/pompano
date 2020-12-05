@@ -22,12 +22,15 @@ import com.attribyte.parser.ContentCleaner;
 import com.attribyte.parser.ParseError;
 import com.attribyte.parser.ParseResult;
 import com.attribyte.parser.model.Entry;
+import com.attribyte.parser.model.Image;
 import com.attribyte.parser.model.Resource;
 import com.google.common.base.Strings;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
+
+import static com.attribyte.parser.Util.httpURL;
 
 public abstract class FeedParser implements com.attribyte.parser.Parser {
 
@@ -79,4 +82,50 @@ public abstract class FeedParser implements com.attribyte.parser.Parser {
    protected abstract void parseEntries(final Document doc,
                                         final ContentCleaner contentCleaner,
                                         final Resource.Builder resource);
+
+   /**
+    * Create an image builder for a URL.
+    * @param url The URL.
+    * @param protocol For protocol-less links.
+    * @return The builder or {@code null}.
+    */
+   protected static Image.Builder image(final String url, final String protocol) {
+      String imageURL = httpURL(url, protocol);
+      if(imageURL != null) {
+         return Image.builder(imageURL);
+      } else {
+         return null;
+      }
+   }
+
+   /**
+    * Adds an image to an entry and if entry has no primary image, sets primary image to this image.
+    * @param entry The entry (builder).
+    * @param builder The image builder.
+    * @return The input entry builder.
+    */
+   protected static Entry.Builder addImage(final Entry.Builder entry,
+                                           final Image.Builder builder) {
+      if(builder != null) {
+         Image image = builder.build();
+         entry.addImage(image);
+         if(entry.getPrimaryImage() == null) {
+            entry.setPrimaryImage(image);
+         }
+      }
+      return entry;
+   }
+
+   /**
+    * Adds an image to an entry if a valid URL and sets the primary image, if unset.
+    * @param entry The entry.
+    * @param url The url.
+    * @param protocol The protocol to use for protocol-less links.
+    * @return The input entry builder.
+    */
+   protected static Entry.Builder addImage(final Entry.Builder entry,
+                                           final String url,
+                                           final String protocol) {
+      return addImage(entry, image(url, protocol));
+   }
 }
