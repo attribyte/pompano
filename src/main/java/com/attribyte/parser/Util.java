@@ -22,7 +22,6 @@ import com.attribyte.parser.model.Entry;
 import com.attribyte.parser.model.Image;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.net.InternetDomainName;
 import org.jsoup.nodes.Element;
@@ -33,6 +32,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Set;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.google.common.base.Strings.nullToEmpty;
 
 public class Util {
 
@@ -47,7 +49,7 @@ public class Util {
     * @param tagNames The set of tag names.
     * @return The element map.
     */
-   public static final Map<String, Element> map(final Element parent, final Set<String> tagNames) {
+   public static Map<String, Element> map(final Element parent, final Set<String> tagNames) {
       Map<String, Element> kvMap = Maps.newHashMapWithExpectedSize(tagNames.size());
       for(Element element : parent.children()) {
          String tagName = element.tagName();
@@ -64,9 +66,9 @@ public class Util {
     * @param childName The tag name of the child.
     * @return The text or an empty string if none.
     */
-   public static final String childText(final Element parent, final String childName) {
+   public static String childText(final Element parent, final String childName) {
       Elements children = parent.getElementsByTag(childName);
-      if(children == null || children.size() == 0) {
+      if(children == null || children.isEmpty()) {
          return "";
       } else {
          return children.first().text();
@@ -79,7 +81,7 @@ public class Util {
     * @param propertyName The name of the property.
     * @return The text or an empty string if none.
     */
-   public static final String childText(final JsonNode parent, final String propertyName) {
+   public static String childText(final JsonNode parent, final String propertyName) {
       if(parent == null) {
          return "";
       }
@@ -96,9 +98,9 @@ public class Util {
     * @param childName The tag name of the child.
     * @return The first matching child or {@code null} if none.
     */
-   public static final Element firstChild(final Element parent, final String childName) {
+   public static Element firstChild(final Element parent, final String childName) {
       Elements children = parent.getElementsByTag(childName);
-      return children.size() > 0 ? children.first() : null;
+      return (children != null && !children.isEmpty()) ? children.first() : null;
    }
 
    /**
@@ -107,9 +109,9 @@ public class Util {
     * @param pattern The pattern.
     * @return The element or {@code null} if not found.
     */
-   public static final Element firstMatch(final Element parent, final String pattern) {
+   public static Element firstMatch(final Element parent, final String pattern) {
       Elements match = parent.select(pattern);
-      return match.size() > 0 ? match.get(0) : null;
+      return (match != null && !match.isEmpty()) ? match.get(0) : null;
    }
 
    /**
@@ -133,7 +135,7 @@ public class Util {
     * @return The cleaned string.
     */
    public static String cleanSpecialCharacters(final String str) {
-      if(Strings.isNullOrEmpty(str)) {
+      if(isNullOrEmpty(str)) {
          return str;
       }
       StringBuilder buf = new StringBuilder();
@@ -165,7 +167,7 @@ public class Util {
     * @return The protocol or {@code null} if not found/invalid link.
     */
    public static String protocol(final String link) {
-      if(link == null) {
+      if(isNullOrEmpty(link)) {
          return null;
       }
 
@@ -183,7 +185,7 @@ public class Util {
     */
    public static String host(String link) {
 
-      if(Strings.isNullOrEmpty(link)) {
+      if(isNullOrEmpty(link)) {
          return null;
       }
 
@@ -225,13 +227,34 @@ public class Util {
    }
 
    /**
+    * Check to see if a URL is {@code http/https}.
+    * @param url The URL.
+    * @param defaultProtocol The protocol used if url starts with {@code //}. If {@code null}, {@code https} is used.
+    * @return The URL or {@code null}.
+    */
+   public static String httpURL(String url, final String defaultProtocol) {
+      url = nullToEmpty(url).trim();
+      if(url.isEmpty()) {
+         return null;
+      }
+
+      if(url.startsWith("http://") || url.startsWith("https://")) {
+         return url;
+      } else if(url.startsWith("//")) {
+         return (isNullOrEmpty(defaultProtocol) ? "https" : defaultProtocol) + ":" + url;
+      } else {
+         return null;
+      }
+   }
+
+   /**
     * Determine if an entry contains the image.
     * @param entry The entry.
     * @param src The image source.
     * @return Does the entry contain the image?
     */
-   public static final boolean containsImage(final Entry.Builder entry, final String src) {
-      if(entry.getImages().size() == 0) {
+   public static boolean containsImage(final Entry.Builder entry, final String src) {
+      if(entry.getImages().isEmpty()) {
          return false;
       }
       for(Image image : entry.getImages()) {
