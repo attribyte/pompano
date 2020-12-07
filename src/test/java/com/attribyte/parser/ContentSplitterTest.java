@@ -18,6 +18,7 @@
 
 package com.attribyte.parser;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import org.jsoup.Jsoup;
@@ -27,6 +28,7 @@ import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -49,6 +51,7 @@ public class ContentSplitterTest extends ResourceTest {
                       "ul",
                       "img",
                       "figure"
+                      //"h1", "h2", "h3", "h4", "h5", "h6"
               }), null).convertToInlineWithBreak("b", "h1", "h2", "h3", "h4", "h5", "h6");
 
       System.out.println(contentSplitter.split(doc.body()));

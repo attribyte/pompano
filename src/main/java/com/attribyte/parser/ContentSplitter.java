@@ -35,8 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import static com.attribyte.parser.Whitelists.blockElementNames;
-
 /**
  * Split content into a single sequence of elements.
  */
@@ -131,7 +129,6 @@ public class ContentSplitter {
       }
 
       public NodeFilter.FilterResult head(Node node, int depth) {
-
          if(node instanceof TextNode) {
             if(!((TextNode)node).isBlank()) {
                inlineNodes.add(node.clone());
@@ -143,9 +140,9 @@ public class ContentSplitter {
             if(tagName.equals("body")) {
                return FilterResult.CONTINUE;
             }
-
             Function<Element, List<Node>> mapFunction = mapTags.get(tagName);
             if(mapFunction != null) {
+               addInlineNodes();
                inlineNodes.addAll(mapFunction.apply(elementNode));
                return FilterResult.SKIP_CHILDREN;
             } else if(preserveTags.contains(tagName)) {
