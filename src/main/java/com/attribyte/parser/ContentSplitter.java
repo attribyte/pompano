@@ -35,6 +35,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import static com.attribyte.parser.Whitelists.inlineElementNames;
+
 /**
  * Split content into a single sequence of elements.
  */
@@ -142,14 +144,15 @@ public class ContentSplitter {
             }
             Function<Element, List<Node>> mapFunction = mapTags.get(tagName);
             if(mapFunction != null) {
-               addInlineNodes();
                inlineNodes.addAll(mapFunction.apply(elementNode));
                return FilterResult.SKIP_CHILDREN;
             } else if(preserveTags.contains(tagName)) {
                elements.add(elementNode.clone());
                return FilterResult.SKIP_CHILDREN;
             } else if(ignoreTags.contains(tagName)) {
-               addInlineNodes();
+               if(!inlineElementNames.contains(tagName)) {
+                  addInlineNodes();
+               }
                return FilterResult.CONTINUE;
             } else {
                inlineNodes.add(node.clone());

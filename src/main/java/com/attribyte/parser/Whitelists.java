@@ -20,6 +20,7 @@ package com.attribyte.parser;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
@@ -75,6 +76,68 @@ public class Whitelists {
                            "ol","output","p","pre","section","table","tfoot","ul","video"
                    }
            );
+
+   /**
+    * All HTML 5 inline element names.
+    */
+   public static final ImmutableSet<String> inlineElementNames =
+           ImmutableSet.copyOf(new String[] {
+                   "a",
+                   "abbr",
+                   "acronym",
+                   "audio",
+                   "b",
+                   "bdi",
+                   "bdo",
+                   "big",
+                   "br",
+                   "button",
+                   "canvas",
+                   "cite",
+                   "code",
+                   "data",
+                   "datalist",
+                   "del",
+                   "dfn",
+                   "em",
+                   "embed",
+                   "i",
+                   "iframe",
+                   "img",
+                   "input",
+                   "ins",
+                   "kbd",
+                   "label",
+                   "map",
+                   "mark",
+                   "meter",
+                   "noscript",
+                   "object",
+                   "output",
+                   "picture",
+                   "progress",
+                   "q",
+                   "ruby",
+                   "s",
+                   "samp",
+                   "script",
+                   "select",
+                   "slot",
+                   "small",
+                   "span",
+                   "strong",
+                   "sub",
+                   "sup",
+                   "svg",
+                   "template",
+                   "textarea",
+                   "time",
+                   "u",
+                   "tt",
+                   "var",
+                   "video",
+                   "wbr"
+           });
 
    /**
     * An immutable set of the names of all HTML 5 inline elements that are "safe"
