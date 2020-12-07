@@ -144,6 +144,9 @@ public class ContentSplitter {
             }
             Function<Element, List<Node>> mapFunction = mapTags.get(tagName);
             if(mapFunction != null) {
+               if(!inlineElementNames.contains(tagName)) {
+                  addInlineNodes();
+               }
                inlineNodes.addAll(mapFunction.apply(elementNode));
                return FilterResult.SKIP_CHILDREN;
             } else if(preserveTags.contains(tagName)) {
