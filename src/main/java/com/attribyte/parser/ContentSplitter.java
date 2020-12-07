@@ -76,6 +76,7 @@ public class ContentSplitter {
             nodes.forEach(containerElem::appendChild);
             NodeCollector collector = new NodeCollector(tagName);
             containerElem.filter(collector);
+            collector.addInlineNodes();
             nodes.clear();
             nodes.addAll(collector.elements);
             nodes.add(new Element("br"));
