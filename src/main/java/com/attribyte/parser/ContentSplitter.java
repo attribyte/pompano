@@ -147,6 +147,7 @@ public class ContentSplitter {
                inlineNodes.addAll(mapFunction.apply(elementNode));
                return FilterResult.SKIP_CHILDREN;
             } else if(preserveTags.contains(tagName)) {
+               addInlineNodes();
                elements.add(elementNode.clone());
                return FilterResult.SKIP_CHILDREN;
             } else if(ignoreTags.contains(tagName)) {
@@ -190,6 +191,7 @@ public class ContentSplitter {
    public Elements split(final Element elem) {
       NodeCollector collector = new NodeCollector();
       elem.filter(collector);
+      collector.addInlineNodes(); //Add any remaining nodes...
       return collector.elements;
    }
 

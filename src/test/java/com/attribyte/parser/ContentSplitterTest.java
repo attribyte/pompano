@@ -33,8 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Tests for utility methods.
@@ -55,5 +54,25 @@ public class ContentSplitterTest extends ResourceTest {
               }), null).convertToInlineWithBreak("b", "h1", "h2", "h3", "h4", "h5", "h6");
 
       System.out.println(contentSplitter.split(doc.body()));
+   }
+
+   @Test
+   public void split_before_after_preserved() throws Exception {
+      String content = "Leading text <img src='https://attribyte.com/img1.jpg'/> Trailing text";
+      Document doc = Jsoup.parseBodyFragment(content, "");
+      ContentSplitter contentSplitter = new ContentSplitter("p",
+              Whitelists.blockElementNames,
+              ImmutableSet.copyOf(new String[] {
+                      "ul",
+                      "img",
+                      "figure"
+              }), null);
+
+
+      Elements splitElements = contentSplitter.split(doc.body());
+      assertEquals(3, splitElements.size());
+      assertEquals("Leading text", splitElements.get(0).text());
+      assertEquals("img", splitElements.get(1).tagName());
+      assertEquals("Trailing text", splitElements.get(2).text());
    }
 }
