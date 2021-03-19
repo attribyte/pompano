@@ -12,20 +12,27 @@ import com.google.common.io.Files;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Entities;
+import org.jsoup.nodes.Node;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 import static com.attribyte.parser.DateParser.tryParseISO8601;
 import static com.attribyte.parser.Util.unzip;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EpubParser {
 
@@ -34,8 +41,14 @@ public class EpubParser {
       //File epubFile = new File("/home/matt/test/test.epub");
       File targetDir = new File("/home/matt/test/target");
       List<EpubDocument> docs =
-              parse(epubFile, targetDir, file -> System.out.println("Processing " + file.getAbsolutePath()));
-      docs.forEach(doc -> System.out.println(doc.toString()));
+              parse(epubFile, targetDir, file -> System.out.println("Processing " + file.getAbsolutePath()), true);
+
+      if(!docs.isEmpty()) {
+         File cleanFile = new File("/home/matt/test/combined.html");
+         try(FileOutputStream fos = new FileOutputStream(cleanFile)) {
+            docs.get(0).writeCleanDocument(fos, true);
+         }
+      }
    }
 
    public static final ImmutableSet<String> supportedMimeTypes =
@@ -46,12 +59,15 @@ public class EpubParser {
     * @param epubFile The file.
     * @param targetDir The target output directory.
     * @param fileConsumer If non-null, extracted files are reported to this function.
+    * @param writeCombinedFile If specified, a new file is written to the directory containing the first linear file
+    * that combines all linear documents.
     * @return The list of documents (each has metadata and a spine).
     * @throws IOException on error.
     */
    public static List<EpubDocument> parse(final File epubFile,
                                           final File targetDir,
-                                          final Consumer<File> fileConsumer) throws IOException {
+                                          final Consumer<File> fileConsumer,
+                                          final boolean writeCombinedFile) throws IOException {
       unzip(epubFile, targetDir, fileConsumer);
       File metaDir = new File(targetDir, "META-INF");
       if(!metaDir.exists()) {
@@ -74,14 +90,30 @@ public class EpubParser {
       }
 
       List<EpubDocument> documents = Lists.newArrayListWithExpectedSize(2);
+      int count = 0;
       for(File file : rootFiles) {
          try(FileInputStream fis = new FileInputStream(file)) {
             Document packageDoc = Jsoup.parse(fis, Charsets.UTF_8.name(), "", Parser.xmlParser());
             Metadata metadata = new Metadata(packageDoc);
             Map<String, ManifestItem> files = manifestItems(file.getParentFile(), packageDoc);
             Spine spine = spine(packageDoc, files);
-            documents.add(new EpubDocument(metadata, spine));
+            if(!writeCombinedFile) {
+               documents.add(new EpubDocument(metadata, spine, null));
+            } else {
+               final File combinedFile;
+               if(count == 0) {
+                  combinedFile = new File(file.getParent(), "combined.html");
+               } else {
+                  combinedFile = new File(file.getParent(), "combined" + count + ".html");
+               }
+               EpubDocument document = new EpubDocument(metadata, spine, combinedFile);
+               try(FileOutputStream fos = new FileOutputStream(combinedFile)) {
+                  document.writeCleanDocument(fos, false);
+               }
+               documents.add(document);
+            }
          }
+         count++;
       }
       return documents;
    }
@@ -126,9 +158,11 @@ public class EpubParser {
    public static class EpubDocument {
 
       public EpubDocument(final Metadata metadata,
-                          final Spine spine) {
+                          final Spine spine,
+                          final File mergedDocumentFile) {
          this.metadata = metadata;
          this.spine = spine;
+         this.mergedDocumentFile = mergedDocumentFile;
       }
 
       @Override
@@ -136,7 +170,37 @@ public class EpubParser {
          return MoreObjects.toStringHelper(this)
                  .add("metadata", metadata)
                  .add("spine", spine)
+                 .add("mergedDocumentFile", mergedDocumentFile)
                  .toString();
+      }
+
+      /**
+       * Build a document that merges all linear content into a single document.
+       * @return The document or {@code null}.
+       * @throws IOException on read error.
+       */
+      public Document mergedDocument() throws IOException {
+         return spine.mergeLinearXHTML();
+      }
+
+
+      /**
+       * Write a cleaned, merged document to an output stream.
+       * @param os The output stream.
+       * @param pretty Use pretty format?
+       * @throws IOException on read/write error.
+       */
+      public void writeCleanDocument(final OutputStream os, final boolean pretty) throws IOException {
+         Document doc = mergedDocument();
+         doc.outputSettings().escapeMode(Entities.EscapeMode.xhtml);
+         doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+         doc.quirksMode(Document.QuirksMode.noQuirks);
+         if(pretty) {
+            doc.outputSettings().prettyPrint();
+         }
+
+         os.write(doc.toString().getBytes(StandardCharsets.UTF_8));
+         os.flush();
       }
 
       /**
@@ -148,6 +212,11 @@ public class EpubParser {
        * The spine.
        */
       public final Spine spine;
+
+      /**
+       * If requested, a file with a merged, cleaned document.
+       */
+      public final File mergedDocumentFile;
    }
 
    /**
@@ -356,6 +425,28 @@ public class EpubParser {
             }
          });
          return items;
+      }
+
+      /**
+       * Merge all the linear XHTML into a single document.
+       * @return The document.
+       */
+      public Document mergeLinearXHTML() throws IOException {
+         Iterator<ManifestItem> items = linearXHTML().iterator();
+         if(!items.hasNext()) {
+            return null;
+         }
+
+         Document doc = checkNotNull(items.next().document());
+         Element body = doc.body();
+         while(items.hasNext()) {
+            Document curr = checkNotNull(items.next().document());
+            for(Node node : curr.body().childNodes()) {
+               body.appendChild(node.clone());
+            }
+         }
+
+         return doc;
       }
 
       /**
