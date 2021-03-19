@@ -15,9 +15,11 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -28,7 +30,8 @@ import static com.attribyte.parser.Util.unzip;
 public class EpubParser {
 
    public static void main(final String[] args) throws Exception {
-      File epubFile = new File("/home/matt/test/test.epub");
+      File epubFile = new File("/home/matt/test/pg64454-images.epub");
+      //File epubFile = new File("/home/matt/test/test.epub");
       File targetDir = new File("/home/matt/test/target");
       List<EpubDocument> docs =
               parse(epubFile, targetDir, file -> System.out.println("Processing " + file.getAbsolutePath()));
@@ -320,8 +323,54 @@ public class EpubParser {
          return MoreObjects.toStringHelper(this)
                  .add("linear", linear)
                  .add("nonLinear", nonLinear)
-                 .add("files", items)
+                 .add("items", items)
                  .toString();
+      }
+
+      /**
+       * @return A list containing all items from both linear and non-linear lists that are images.
+       */
+      public List<ManifestItem> images() {
+         List<ManifestItem> images = Lists.newArrayList();
+         linear.forEach(item -> {
+            if(item.mediaType.startsWith("image/")) {
+               images.add(item);
+            }
+         });
+
+         nonLinear.forEach(item -> {
+            if(item.mediaType.startsWith("image/")) {
+               images.add(item);
+            }
+         });
+
+         return images;
+      }
+
+      /**
+       * @return All items in the linear list that are XHTML.
+       */
+      public List<ManifestItem> linearXHTML() {
+         List<ManifestItem> items = Lists.newArrayList();
+         linear.forEach(item -> {
+            if(item.mediaType.equalsIgnoreCase("application/xhtml+xml")) {
+               items.add(item);
+            }
+         });
+         return items;
+      }
+
+      /**
+       * @return All items in the non-linear list that are XHTML.
+       */
+      public List<ManifestItem> nonLinearXHTML() {
+         List<ManifestItem> items = Lists.newArrayList();
+         nonLinear.forEach(item -> {
+            if(item.mediaType.equalsIgnoreCase("application/xhtml+xml")) {
+               items.add(item);
+            }
+         });
+         return items;
       }
 
       /**
@@ -391,6 +440,17 @@ public class EpubParser {
       public byte[] bytes() throws IOException {
          try(FileInputStream fis = new FileInputStream(file)) {
             return ByteStreams.toByteArray(fis);
+         }
+      }
+
+      /**
+       * Externally process the bytes for this item supplied as a stream.
+       * @param processor The processor function.
+       * @throws IOException On error.
+       */
+      public void processByteStream(final Consumer<InputStream> processor) throws IOException {
+         try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
+            processor.accept(bis);
          }
       }
 
