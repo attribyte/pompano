@@ -20,13 +20,11 @@ package com.attribyte.parser;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import jdk.nashorn.internal.ir.annotations.Immutable;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 public class Whitelists {
 

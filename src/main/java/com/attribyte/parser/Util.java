@@ -23,15 +23,27 @@ import com.attribyte.parser.model.Image;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Maps;
+import com.google.common.io.ByteStreams;
 import com.google.common.net.InternetDomainName;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Strings.nullToEmpty;
@@ -362,5 +374,66 @@ public class Util {
       }
 
       return slug;
+   }
+
+   /**
+    * Unzip a file.
+    * @param zipFile The zip file.
+    * @param targetDir The target output directory.
+    * @param fileConsumer A function called before each file or directory is written.
+    * @throws IOException on error.
+    */
+   public static void unzip(@NonNull final File zipFile,
+                            @NonNull final File targetDir,
+                            @Nullable final Consumer<File> fileConsumer) throws IOException {
+      try(ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipFile)))) {
+         ZipEntry entry;
+         while((entry = zis.getNextEntry()) != null) {
+            File newFile = createUnzipFile(targetDir, entry);
+            if(fileConsumer != null) {
+               fileConsumer.accept(newFile);
+            }
+            if(entry.isDirectory()) {
+               if(newFile.exists() && newFile.isFile()) {
+                  throw new IOException(String.format("Unable to create directory, '%s' - file exists at this location.",
+                          newFile.getAbsolutePath()));
+               } else if(!newFile.exists() && !newFile.mkdirs()) {
+                  throw new IOException(String.format("Unable to create directory, '%s'",
+                          newFile.getAbsolutePath()));
+               }
+            } else {
+               if(newFile.exists() && !newFile.isFile()) {
+                  throw new IOException(String.format("Unable to create file, '%s'",
+                          newFile.getAbsolutePath()));
+               }
+
+               try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(newFile))) {
+                  ByteStreams.copy(zis, bos);
+               }
+            }
+         }
+      }
+   }
+
+   /**
+    * Create a file to write unzipped data, checking to make sure nothing is written outside the target directory.
+    * @param targetDir The target directory.
+    * @param entry The zip entry.
+    * @return The file to write.
+    * @throws IOException if unable to create directory or attempt to write outside the target.
+    */
+   private static File createUnzipFile(final File targetDir, final ZipEntry entry) throws IOException {
+      File newFile = new File(targetDir, entry.getName());
+      if(newFile.getCanonicalPath().startsWith(targetDir.getCanonicalPath() + File.separator)) {
+         File checkParent = newFile.getParentFile();
+         if(!checkParent.exists() && !checkParent.mkdirs()) {
+            throw new IOException(String.format("Unable to create directory, '%s'",
+                    checkParent.getAbsolutePath()));
+         }
+         return newFile;
+      } else {
+         throw new IOException(String.format("Attempt to create file outside target directory, '%s'",
+                 newFile.getAbsolutePath()));
+      }
    }
 }
