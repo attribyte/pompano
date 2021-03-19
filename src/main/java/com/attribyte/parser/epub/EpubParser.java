@@ -224,9 +224,7 @@ public class EpubParser {
             return ImmutableList.of(elements.get(0).text());
          } else {
             ImmutableList.Builder<String> builder = ImmutableList.builder();
-            elements.forEach(elem -> {
-               builder.add(elem.text());
-            });
+            elements.forEach(elem -> builder.add(elem.text()));
             return builder.build();
          }
       }
