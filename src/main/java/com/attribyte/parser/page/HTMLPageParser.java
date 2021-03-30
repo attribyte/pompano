@@ -46,6 +46,7 @@ import java.util.Set;
 import static com.attribyte.parser.DateParser.tryParseISO8601;
 import static com.attribyte.parser.DateParser.tryParseRFC822;
 import static com.attribyte.parser.Util.host;
+import static com.google.common.base.Strings.nullToEmpty;
 
 /**
  * Extract interesting content from HTML as a {@code Page}.
@@ -123,7 +124,7 @@ public class HTMLPageParser {
       Elements linkElements = doc.getElementsByTag("link");
       LinkedHashSet<Link> links = Sets.newLinkedHashSetWithExpectedSize(linkElements.size() + 4);
       for(Element linkElement : linkElements) {
-         String href = linkElement.absUrl("href");
+         String href = absUrl(linkElement,"href");
          if(!href.isEmpty()) {
             String rel = linkElement.attr("rel");
             String type = linkElement.attr("type");
@@ -490,7 +491,7 @@ public class HTMLPageParser {
                   //Ignore images with invalid data URI in src...
                }
             } else {
-               src = imageElement.absUrl("src");
+               src = absUrl(imageElement, "src");
                String alt = imageElement.attr("alt");
                String title = imageElement.attr("title");
                String id = imageElement.attr("id");
@@ -520,7 +521,7 @@ public class HTMLPageParser {
          String altText = videoElement.ownText();
          Elements sources = videoElement.getElementsByTag("source");
          for(Element source : sources) {
-            String src = source.absUrl("src");
+            String src = absUrl(source, "src");
             if(!src.isEmpty()) {
                String type = source.attr("type");
                Video video = Video.builder(src)
@@ -530,9 +531,7 @@ public class HTMLPageParser {
                        .setHeight(height != null ? height : 0)
                        .setMediaType(type)
                        .build();
-               if(!videos.contains(video)) {
-                  videos.add(video);
-               }
+               videos.add(video);
             }
          }
       }
@@ -547,7 +546,7 @@ public class HTMLPageParser {
    public static void anchors(final Document doc, final Set<Anchor> anchors) {
       Elements anchorElements = doc.getElementsByTag("a");
       for(Element anchorElement : anchorElements) {
-         String href = anchorElement.absUrl("href").trim();
+         String href = absUrl(anchorElement,"href").trim();
          if(!href.isEmpty()) {
             String title = anchorElement.attr("title").trim();
             String anchorText = anchorElement.text().trim();
@@ -577,7 +576,7 @@ public class HTMLPageParser {
          String title = audioElement.attr("title");
          String altText = audioElement.ownText();
          for(Element source : sources) {
-            String src = source.absUrl("src");
+            String src = absUrl(source, "src");
             if(!src.isEmpty()) {
                String type = source.attr("type");
                Audio audio = Audio.builder(src)
@@ -585,9 +584,7 @@ public class HTMLPageParser {
                        .setAltText(altText)
                        .setMediaType(type)
                        .build();
-               if(!audios.contains(audio)) {
-                  audios.add(audio);
-               }
+               audios.add(audio);
             }
          }
       }
@@ -667,7 +664,7 @@ public class HTMLPageParser {
       }
 
       for(Element elem : imageMatch) {
-         String content = elem.absUrl(contentKey);
+         String content = absUrl(elem, contentKey);
          if(!content.isEmpty()) {
             Image.Builder imageBuilder = Image.builder(content);
             Element nextSibling = elem;
@@ -735,7 +732,7 @@ public class HTMLPageParser {
       }
 
       for(Element elem : videoMatch) {
-         String content = elem.absUrl(contentKey);
+         String content = absUrl(elem, contentKey);
          if(!content.isEmpty()) {
             Video.Builder videoBuilder = Video.builder(content);
             Element nextSibling = elem;
@@ -803,7 +800,7 @@ public class HTMLPageParser {
       }
 
       for(Element elem : audioMatch) {
-         String content = elem.absUrl(contentKey);
+         String content = absUrl(elem, contentKey);
          if(!content.isEmpty()) {
             Audio.Builder audioBuilder = Audio.builder(content);
             Element nextSibling = elem;
@@ -843,6 +840,18 @@ public class HTMLPageParser {
    }
 
    /**
+    * Gets the absolute URL for an attribute if the document base URI is set.
+    * @param elem The element.
+    * @param contentAttr The content attribute.
+    * @return The absolute URL.
+    */
+   private static String absUrl(final Element elem, final String contentAttr) {
+      return nullToEmpty(elem.ownerDocument().baseUri()).contains("://") ?
+              elem.absUrl(contentAttr) : elem.attr(contentAttr);
+   }
+
+
+   /**
     * Gets the value of the first matching attribute as an absolute URL in a collection of elements.
     * @param match The match elements.
     * @param contentAttr The attribute for content.
@@ -850,7 +859,7 @@ public class HTMLPageParser {
     */
    private static String firstAbsoluteURL(final Elements match, final String contentAttr) {
       for(Element elem : match) {
-         String content = elem.absUrl(contentAttr).trim();
+         String content = absUrl(elem, contentAttr).trim();
          if(!content.isEmpty()) {
             return content;
          }
