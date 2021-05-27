@@ -37,14 +37,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class EpubParser {
 
    public static void main(final String[] args) throws Exception {
-      File epubFile = new File("/home/matt/test/pg64454-images.epub");
+      //File epubFile = new File("/home/matt/test/pg64454-images.epub");
       //File epubFile = new File("/home/matt/test/test.epub");
-      File targetDir = new File("/home/matt/test/target");
+      File epubFile = new File("/home/matt/test/1984.epub");
+      File targetDir = new File("/home/matt/test/target6");
       List<EpubDocument> docs =
               parse(epubFile, targetDir, file -> System.out.println("Processing " + file.getAbsolutePath()), true);
 
       if(!docs.isEmpty()) {
-         File cleanFile = new File("/home/matt/test/combined.html");
+         File cleanFile = new File("/home/matt/test/target6/combined.html");
          try(FileOutputStream fos = new FileOutputStream(cleanFile)) {
             docs.get(0).writeCleanDocument(fos, true);
          }
@@ -586,7 +587,7 @@ public class EpubParser {
       List<ManifestItem> nonLinear = Lists.newArrayList();
 
       for(Element element : opfDoc.select("spine > itemref")) {
-         boolean isLinear = element.attr("linear").equalsIgnoreCase("yes");
+         boolean isLinear = !element.attr("linear").equalsIgnoreCase("no");
          String id = element.attr("idref");
          ManifestItem item = items.get(id);
          if(item == null) {
