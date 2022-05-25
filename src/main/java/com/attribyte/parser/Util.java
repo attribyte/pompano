@@ -22,14 +22,20 @@ import com.attribyte.parser.model.Entry;
 import com.attribyte.parser.model.Image;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import com.google.common.net.InternetDomainName;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Entities;
 import org.jsoup.parser.Tag;
-import org.jsoup.select.Elements;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -39,6 +45,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -79,12 +86,8 @@ public class Util {
     * @return The text or an empty string if none.
     */
    public static String childText(final Element parent, final String childName) {
-      Elements children = parent.getElementsByTag(childName);
-      if(children == null || children.isEmpty()) {
-         return "";
-      } else {
-         return children.first().text();
-      }
+      Element first = parent.getElementsByTag(childName).first();
+      return first != null ? first.text() : "";
    }
 
    /**
@@ -111,8 +114,7 @@ public class Util {
     * @return The first matching child or {@code null} if none.
     */
    public static Element firstChild(final Element parent, final String childName) {
-      Elements children = parent.getElementsByTag(childName);
-      return (children != null && !children.isEmpty()) ? children.first() : null;
+      return parent.getElementsByTag(childName).first();
    }
 
    /**
@@ -122,8 +124,7 @@ public class Util {
     * @return The element or {@code null} if not found.
     */
    public static Element firstMatch(final Element parent, final String pattern) {
-      Elements match = parent.select(pattern);
-      return (match != null && !match.isEmpty()) ? match.get(0) : null;
+      return parent.select(pattern).first();
    }
 
    /**
@@ -374,6 +375,65 @@ public class Util {
       }
 
       return slug;
+   }
+
+   /**
+    * Split on all breaking whitespace, omitting empty and trimming all results.
+    */
+   private static final Splitter LINEBREAK_SPLITTER =
+           Splitter.on(CharMatcher.anyOf("\n\r")).trimResults();
+
+   /**
+    * Join with a space.
+    */
+   private static final Joiner JOIN_WITH_SPACE = Joiner.on(' ');
+
+
+   public static Document splitSimpleHTML(final String str) {
+      List<String> components = splitOnMultipleLinebreaks(str, false);
+      StringBuilder toParse = new StringBuilder();
+      for(String component : components) {
+         if(!component.isEmpty()) {
+            Document componentDoc = Jsoup.parseBodyFragment(component, "");
+            if(componentDoc.body().childNodeSize() == 1 &&
+                    componentDoc.body().childNode(0) instanceof Element) {
+               toParse.append(componentDoc.body().html());
+            } else {
+               toParse.append("<p>").append(componentDoc.body().html()).append("</p>");
+            }
+         }
+      }
+
+      return Jsoup.parse(toParse.toString(), "");
+   }
+
+   /**
+    * Split on multiple line breaks. Single breaks are replaced with a space.
+    * @param str The string.
+    * @param unescapeHTMLEntities Attempt to unescape any recognized HTML entities.
+    */
+   public static List<String> splitOnMultipleLinebreaks(final String str,
+                                                        final boolean unescapeHTMLEntities) {
+      if(isNullOrEmpty(str)) {
+         return ImmutableList.of();
+      } else {
+         List<String> tmpList = Lists.newArrayList();
+         List<String> resultList = Lists.newArrayList();
+         for(String line : LINEBREAK_SPLITTER.split(str)) {
+            if(line.isEmpty() && !tmpList.isEmpty()) {
+               resultList.add(JOIN_WITH_SPACE.join(tmpList));
+               tmpList.clear();
+            } else if(!line.isEmpty()){
+               tmpList.add(unescapeHTMLEntities ? Entities.unescape(line) : line);
+            }
+         }
+
+         if(!tmpList.isEmpty()) {
+            resultList.add(JOIN_WITH_SPACE.join(tmpList));
+         }
+
+         return resultList;
+      }
    }
 
    /**

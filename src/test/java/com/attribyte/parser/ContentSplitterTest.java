@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
 public class ContentSplitterTest extends ResourceTest {
 
    @Test
-   public void split0() throws Exception {
+   public void splitHTML() throws Exception {
       Document doc = Jsoup.parse(testResource("split_test_0.html"));
       ContentSplitter contentSplitter = new ContentSplitter("p",
               Safelists.blockElementNames,
@@ -50,6 +50,25 @@ public class ContentSplitterTest extends ResourceTest {
               }), null).convertToInlineWithBreak("b", "h1", "h2", "h3", "h4", "h5", "h6");
 
       System.out.println(contentSplitter.split(doc.body()));
+   }
+
+   @Test
+   public void splitOnMultipleLinebreaks() throws Exception {
+      String str = testResource("split_test_1.txt");
+      List<String> splitList = Util.splitOnMultipleLinebreaks(str, true);
+      assertEquals(5, splitList.size());
+      assertTrue(splitList.get(0).contains("’"));
+      for(int i = 0; i < splitList.size(); i++) {
+         System.out.println(i + ": " + splitList.get(i));
+      }
+   }
+
+   @Test
+   public void splitSimpleHTML() throws Exception {
+      String str = testResource("split_test_2.html");
+      Document doc = Util.splitSimpleHTML(str);
+      System.out.println(doc.body().html());
+      assertEquals(6, doc.body().children().size());
    }
 
    @Test

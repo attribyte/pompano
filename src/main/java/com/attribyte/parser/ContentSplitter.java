@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
@@ -36,6 +37,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import static com.attribyte.parser.Safelists.inlineElementNames;
+import static com.attribyte.parser.Util.splitOnMultipleLinebreaks;
 
 /**
  * Split content into a single sequence of elements.
@@ -186,7 +188,6 @@ public class ContentSplitter {
       final String containerTag;
    }
 
-
    /**
     * Split into elements.
     * @param elem The element to split.
@@ -198,8 +199,6 @@ public class ContentSplitter {
       collector.addInlineNodes(); //Add any remaining nodes...
       return collector.elements;
    }
-
-
 
    /**
     * Create a copy of this content splitter with new container tag.
