@@ -23,22 +23,22 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Cleaner;
-import org.jsoup.safety.Whitelist;
+import org.jsoup.safety.Safelist;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 /**
- * Tests for whitelists.
+ * Tests for safelists.
  * @author Matt Hamer
  */
-public class WhitelistTest {
+public class SafelistTest {
 
    @Test
    public void standardBlockElements() {
       String html = "<html><head><title>Title</title></head><body><div><p onfocus='bad' data-test='test-data' id='testid' class='testclass'><em>test</em></p></div></body></html>";
       Document doc = Jsoup.parse(html);
-      Document cleanDoc = new Cleaner(Whitelists.blockElements()).clean(doc);
+      Document cleanDoc = new Cleaner(Safelists.blockElements()).clean(doc);
       Element div = cleanDoc.body().selectFirst("div");
       assertNotNull(div);
       Element p = cleanDoc.body().selectFirst("p");
@@ -51,10 +51,10 @@ public class WhitelistTest {
 
    @Test
    public void customElements() {
-      Whitelist whitelist = Whitelists.whitelist(ImmutableSet.of("p"), ImmutableSet.of("id", "data-*"));
+      Safelist safelist = Safelists.safelist(ImmutableSet.of("p"), ImmutableSet.of("id", "data-*"));
       String html = "<html><head><title>Title</title></head><body><div><p onfocus='bad' data-test='test-data' id='testid' class='testclass'><em>test</em></p></div></body></html>";
       Document doc = Jsoup.parse(html);
-      Document cleanDoc = new Cleaner(whitelist).clean(doc);
+      Document cleanDoc = new Cleaner(safelist).clean(doc);
       Element div = cleanDoc.body().selectFirst("div");
       assertNull(div);
       Element p = cleanDoc.body().selectFirst("p");
@@ -67,10 +67,10 @@ public class WhitelistTest {
 
    @Test
    public void customAttributes() {
-      Whitelist whitelist = Whitelists.whitelist(Whitelists.blockElementNames, ImmutableSet.of("id", "data-*"));
+      Safelist safelist = Safelists.safelist(Safelists.blockElementNames, ImmutableSet.of("id", "data-*"));
       String html = "<html><head><title>Title</title></head><body><p onfocus='bad' data-test='test-data' id='testid' class='testclass'><em>test</em></p></body></html>";
       Document doc = Jsoup.parse(html);
-      Document cleanDoc = new Cleaner(whitelist).clean(doc);
+      Document cleanDoc = new Cleaner(safelist).clean(doc);
       Element p = cleanDoc.body().selectFirst("p");
       assertNotNull(p);
       assertEquals(p.attr("data-test"), "test-data");

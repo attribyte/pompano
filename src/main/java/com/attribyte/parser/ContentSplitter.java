@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import static com.attribyte.parser.Whitelists.inlineElementNames;
+import static com.attribyte.parser.Safelists.inlineElementNames;
 
 /**
  * Split content into a single sequence of elements.

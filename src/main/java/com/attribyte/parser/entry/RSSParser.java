@@ -29,7 +29,7 @@ import com.google.common.primitives.Ints;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.safety.Whitelist;
+import org.jsoup.safety.Safelist;
 import org.jsoup.select.Elements;
 
 import java.util.List;
@@ -102,7 +102,7 @@ public class RSSParser extends FeedParser {
       final String content;
       if(contentEncoded.length() > description.length()) {
          if(!description.isEmpty()) {
-            entry.setSummary(Jsoup.clean(description, Whitelist.basic()));
+            entry.setSummary(Jsoup.clean(description, Safelist.basic()));
          }
          content = contentEncoded;
       } else {

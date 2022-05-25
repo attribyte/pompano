@@ -27,7 +27,6 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -42,7 +41,7 @@ public class ContentSplitterTest extends ResourceTest {
    public void split0() throws Exception {
       Document doc = Jsoup.parse(testResource("split_test_0.html"));
       ContentSplitter contentSplitter = new ContentSplitter("p",
-              Whitelists.blockElementNames,
+              Safelists.blockElementNames,
               ImmutableSet.copyOf(new String[] {
                       "ul",
                       "img",
@@ -58,7 +57,7 @@ public class ContentSplitterTest extends ResourceTest {
       String content = "Leading text <img src='https://attribyte.com/img1.jpg'/> Trailing text";
       Document doc = Jsoup.parseBodyFragment(content, "");
       ContentSplitter contentSplitter = new ContentSplitter("p",
-              Whitelists.blockElementNames,
+              Safelists.blockElementNames,
               ImmutableSet.copyOf(new String[] {
                       "ul",
                       "img",
@@ -78,7 +77,7 @@ public class ContentSplitterTest extends ResourceTest {
       String content = "Leading text <h1>The <b>title</b>.</h1> Trailing text";
       Document doc = Jsoup.parseBodyFragment(content, "");
       ContentSplitter contentSplitter = new ContentSplitter("p",
-              Whitelists.blockElementNames,
+              Safelists.blockElementNames,
               ImmutableSet.copyOf(new String[] {
                       "ul",
                       "img",
@@ -123,7 +122,7 @@ public class ContentSplitterTest extends ResourceTest {
       String content = "<div><a href='https://attribyte.com'><img src='https://attribyte.com/img1.jpg'/></a></div>";
       Document doc = Jsoup.parseBodyFragment(content, "");
       ContentSplitter contentSplitter = new ContentSplitter("p",
-              Whitelists.blockElementNames,
+              Safelists.blockElementNames,
               ImmutableSet.of("img")
               , null);
       Elements splitElements = contentSplitter.split(doc.body());

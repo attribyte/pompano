@@ -22,34 +22,34 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Element;
-import org.jsoup.safety.Whitelist;
+import org.jsoup.safety.Safelist;
 
 import java.util.Collection;
 
-public class Whitelists {
+public class Safelists {
 
    /**
-    * The default content whitelist with images allowed.
-    * @return The content whitelist.
+    * The default content safelist with images allowed.
+    * @return The content safelist.
     */
-   public static Whitelist contentWhitelistWithImages() {
-      return contentWhitelist()
+   public static Safelist contentSafelistWithImages() {
+      return contentSafelist()
               .addTags("img")
               .addAttributes("img", "src", "title", "alt", "width", "height")
               .addProtocols("img", "src", "http", "https");
    }
 
    /**
-    * The default content whitelist.
+    * The default content safelist.
     * <p>
-    *    Includes tags from the basic whitelist as well as
+    *    Includes tags from the basic safelist as well as
     *    {@code h1, h2, h3, h4, h5, h6, table, tr, td, th, tbody, tfoot, thead, col, colgroup, figure, figcaption
     *    header, footer, aside, details, section, summary, time, article, main}
     * </p>
-    * @return The whitelist.
+    * @return The safelist.
     */
-   public static Whitelist contentWhitelist() {
-      return basicWhitelist()
+   public static Safelist contentSafelist() {
+      return basicSafelist()
               .addTags(
                       "h1", "h2", "h3", "h4", "h5", "h6",
                       "table", "tr", "td", "th", "tbody", "tfoot", "thead", "col", "colgroup", "figure", "figcaption",
@@ -233,15 +233,15 @@ public class Whitelists {
    });
 
    /**
-    * Creates a whitelist that allows a specific set of tags and attributes (without regard to context).
+    * Creates a safelist that allows a specific set of tags and attributes (without regard to context).
     * @param allowTags A collection of tags to allow. Add {@code 'data-*'} to allow any HTML5 data attribute.
     * @param allowAttributes A collection of attributes to allow.
-    * @return The whitelist.
+    * @return The safelist.
     */
-   public static Whitelist whitelist(final Collection<String> allowTags,
-                                     final Collection<String> allowAttributes) {
+   public static Safelist safelist(final Collection<String> allowTags,
+                                   final Collection<String> allowAttributes) {
 
-      return new Whitelist() {
+      return new Safelist() {
 
          private final ImmutableSet<String> tagNames = ImmutableSet.copyOf(allowTags.stream()
                  .map(String::toLowerCase).distinct().iterator()
@@ -265,25 +265,25 @@ public class Whitelists {
    }
 
    /**
-    * A whitelist that includes only HTML5 block elements
+    * A safelist that includes only HTML5 block elements
     * with {@code class}, {@code id} and {@code data-*}attributes.
-    * @return The whitelist.
+    * @return The safelist.
     */
-   public static Whitelist blockElements() {
-      return whitelist(blockElementNames, ImmutableList.of("id", "class", "data-*"));
+   public static Safelist blockElements() {
+      return safelist(blockElementNames, ImmutableList.of("id", "class", "data-*"));
    }
 
    /**
-    * The basic whitelist.
+    * The basic safelist.
     * <p>
     *    Includes tags: {@code a, b, blockquote, br, cite, code, dd, dl, dt, em, i, li, ol, p, pre, q, small,
     *    strike, del, s, strong, sub, sup, u, ul, mark, bdi}
     * </p>
-    * @return The whitelist.
+    * @return The safelist.
     */
-   public static Whitelist basicWhitelist() {
+   public static Safelist basicSafelist() {
 
-      return new Whitelist()
+      return new Safelist()
               .addTags(
                       "a", "b", "blockquote", "br", "cite", "code", "dd", "dl", "dt", "em",
                       "i", "li", "ol", "p", "pre", "q", "small", "strike", "del", "s", "strong", "sub",
