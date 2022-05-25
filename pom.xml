@@ -32,7 +32,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jacksonVersion>2.11.3</jacksonVersion>
-        <jacksonDatabindVersion>2.11.3</jacksonDatabindVersion>
+        <jacksonDatabindVersion>2.12.6.1</jacksonDatabindVersion>
     </properties>
     <description>
         Pompano is a suite of parsers for various feed and page formats.
