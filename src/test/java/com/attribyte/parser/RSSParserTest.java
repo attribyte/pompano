@@ -21,14 +21,10 @@ package com.attribyte.parser;
 import com.attribyte.parser.entry.RSSParser;
 import com.attribyte.parser.model.Entry;
 import com.attribyte.parser.model.Resource;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.*;
 
@@ -37,16 +33,6 @@ import static org.junit.Assert.*;
  * @author Matt Hamer
  */
 public class RSSParserTest extends ResourceTest {
-
-   private static String file(final String filename) throws IOException{
-      return new String(Files.toByteArray(new File(filename)), StandardCharsets.UTF_8);
-   }
-
-   public void big() throws IOException {
-      ParseResult res = new RSSParser().parse(file("/home/matt/test/rww_rss.xml"), "https://readwrite.com/feed/",
-              new DefaultContentCleaner());
-      System.out.println(res.toString());
-   }
 
    @Test
    public void minimal() throws IOException {
@@ -80,7 +66,7 @@ public class RSSParserTest extends ResourceTest {
       ParseResult res = new RSSParser().parse(testResource("rss2.xml"), "", new DefaultContentCleaner());
       assertNotNull(res);
       assertFalse(res.hasErrors());
-      assert(res.resource.isPresent());
+      assertTrue(res.resource.isPresent());
       Resource parsedResource = res.resource.get();
       assertTrue(parsedResource.entries.size() > 1);
       Entry entry = findEntry("https://attribyte.com/test2", parsedResource);
@@ -94,7 +80,7 @@ public class RSSParserTest extends ResourceTest {
       ParseResult res = new RSSParser().parse(testResource("rss2.xml"), "", new DefaultContentCleaner());
       assertNotNull(res);
       assertFalse(res.hasErrors());
-      assert(res.resource.isPresent());
+      assertTrue(res.resource.isPresent());
       Resource parsedResource = res.resource.get();
       Entry entry = findEntry("https://attribyte.com/test3", parsedResource);
       assertNotNull(entry);
@@ -108,7 +94,7 @@ public class RSSParserTest extends ResourceTest {
       ParseResult res = new RSSParser().parse(testResource("rss2.xml"), "", new DefaultContentCleaner());
       assertNotNull(res);
       assertFalse(res.hasErrors());
-      assert(res.resource.isPresent());
+      assertTrue(res.resource.isPresent());
       Resource parsedResource = res.resource.get();
       Entry entry = findEntry("https://attribyte.com/test3", parsedResource);
       assertNotNull(entry);
@@ -120,7 +106,7 @@ public class RSSParserTest extends ResourceTest {
       ParseResult res = new RSSParser().parse(testResource("rss2.xml"), "", new DefaultContentCleaner());
       assertNotNull(res);
       assertFalse(res.hasErrors());
-      assert(res.resource.isPresent());
+      assertTrue(res.resource.isPresent());
       Resource parsedResource = res.resource.get();
       Entry entry = findEntry("https://attribyte.com/test4", parsedResource);
       assertNotNull(entry);
@@ -135,7 +121,7 @@ public class RSSParserTest extends ResourceTest {
       ParseResult res = new RSSParser().parse(testResource("rss2.xml"), "", new DefaultContentCleaner());
       assertNotNull(res);
       assertFalse(res.hasErrors());
-      assert(res.resource.isPresent());
+      assertTrue(res.resource.isPresent());
       Resource parsedResource = res.resource.get();
       Entry entry = findEntry("https://attribyte.com/test5", parsedResource);
       assertNotNull(entry);
@@ -146,7 +132,7 @@ public class RSSParserTest extends ResourceTest {
       ParseResult res = new RSSParser().parse(testResource("rss2.xml"), "", new DefaultContentCleaner());
       assertNotNull(res);
       assertFalse(res.hasErrors());
-      assert(res.resource.isPresent());
+      assertTrue(res.resource.isPresent());
       Resource parsedResource = res.resource.get();
       Entry entry = findEntry("https://attribyte.com/test6", parsedResource);
       assertNotNull(entry);
@@ -158,7 +144,7 @@ public class RSSParserTest extends ResourceTest {
       ParseResult res = new RSSParser().parse(testResource("rss2.xml"), "", new DefaultContentCleaner());
       assertNotNull(res);
       assertFalse(res.hasErrors());
-      assert(res.resource.isPresent());
+      assertTrue(res.resource.isPresent());
       Resource parsedResource = res.resource.get();
       Entry entry = findEntry("https://attribyte.com/test6", parsedResource);
       assertNotNull(entry);
@@ -175,7 +161,7 @@ public class RSSParserTest extends ResourceTest {
       ParseResult res = new RSSParser().parse(testResource("rss2.xml"), "", new DefaultContentCleaner());
       assertNotNull(res);
       assertFalse(res.hasErrors());
-      assert(res.resource.isPresent());
+      assertTrue(res.resource.isPresent());
       Resource parsedResource = res.resource.get();
       Entry entry = findEntry("https://attribyte.com/test7", parsedResource);
       assertNotNull(entry);
@@ -189,7 +175,7 @@ public class RSSParserTest extends ResourceTest {
       ParseResult res = new RSSParser().parse(testResource("rss2.xml"), "", new DefaultContentCleaner());
       assertNotNull(res);
       assertFalse(res.hasErrors());
-      assert(res.resource.isPresent());
+      assertTrue(res.resource.isPresent());
       Resource parsedResource = res.resource.get();
       Entry entry = findEntry("https://attribyte.com/test8", parsedResource);
       assertNotNull(entry);

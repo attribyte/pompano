@@ -103,6 +103,7 @@ public class LinkExtractor {
          String href = e.attr("cite");
          String curl = canonicalize(href);
          if(!seenSet.contains(curl)) {
+            seenSet.add(curl);
             links.add(addProtocol(href));
          }
       });

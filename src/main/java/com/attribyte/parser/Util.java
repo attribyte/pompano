@@ -321,10 +321,11 @@ public class Util {
 
       int sourcePos = 0;
       CharMatcher matcher = CharMatcher.whitespace();
-      while(sourcePos++ < source.length()) {
+      while(sourcePos < source.length()) {
          if(!matcher.matches(source.charAt(sourcePos))) {
             break;
          }
+         sourcePos++;
       }
 
       int matchPos = 0;

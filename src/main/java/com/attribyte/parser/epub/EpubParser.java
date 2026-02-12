@@ -54,15 +54,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class EpubParser {
 
    public static void main(final String[] args) throws Exception {
-      //File epubFile = new File("/home/matt/test/pg64454-images.epub");
-      //File epubFile = new File("/home/matt/test/test.epub");
-      File epubFile = new File("/home/matt/test/1984.epub");
-      File targetDir = new File("/home/matt/test/target6");
+      if(args.length < 2) {
+         System.err.println("Usage: EpubParser <epub-file> <target-dir>");
+         System.exit(1);
+      }
+      File epubFile = new File(args[0]);
+      File targetDir = new File(args[1]);
       List<EpubDocument> docs =
               parse(epubFile, targetDir, file -> System.out.println("Processing " + file.getAbsolutePath()), true);
 
       if(!docs.isEmpty()) {
-         File cleanFile = new File("/home/matt/test/target6/combined.html");
+         File cleanFile = new File(targetDir, "combined.html");
          try(FileOutputStream fos = new FileOutputStream(cleanFile)) {
             docs.get(0).writeCleanDocument(fos, true);
          }

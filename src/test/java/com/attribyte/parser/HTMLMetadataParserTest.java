@@ -31,7 +31,7 @@ import java.io.IOException;
 import static org.junit.Assert.*;
 
 /**
- * Test the Atom parser.
+ * Test the HTML metadata parser.
  * @author Matt Hamer
  */
 public class HTMLMetadataParserTest extends ResourceTest {

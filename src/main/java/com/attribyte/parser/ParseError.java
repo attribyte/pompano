@@ -34,7 +34,7 @@ public class ParseError {
     * @param position The position.
     */
    public ParseError(final String message, final int position) {
-      this(message, null, 0);
+      this(message, null, position);
    }
 
    /**

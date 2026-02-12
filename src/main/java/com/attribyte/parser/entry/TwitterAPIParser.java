@@ -55,7 +55,7 @@ public class TwitterAPIParser implements com.attribyte.parser.Parser {
    /**
     * The source property in which the maximum seen id is saved.
     */
-   public static String MAX_ID_META = "maxId";
+   public static final String MAX_ID_META = "maxId";
 
    @Override
    public String name() {

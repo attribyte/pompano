@@ -110,7 +110,8 @@ public class Page {
          String file = Hashing.sha256().hashString(canonicalLink, StandardCharsets.UTF_8).toString().substring(0, 16);
          File outputFile = new File(debugOutputDir, host + "/" + file);
          System.out.println("Writing to " + outputFile.getAbsolutePath());
-         if(!outputFile.getParentFile().mkdirs()) {
+         File parentDir = outputFile.getParentFile();
+         if(!parentDir.mkdirs() && !parentDir.isDirectory()) {
             throw new IOException("Unable to create host directory");
          }
          Files.write(toString().getBytes(StandardCharsets.UTF_8), outputFile);

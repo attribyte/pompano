@@ -222,7 +222,7 @@ public class Video {
        * @return A self-reference.
        */
       public Builder addVariant(final Video variant) {
-         if(variants != null) {
+         if(variants == null) {
             variants = Lists.newArrayListWithExpectedSize(4);
          }
          variants.add(variant);

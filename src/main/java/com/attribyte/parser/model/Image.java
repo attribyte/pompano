@@ -335,7 +335,7 @@ public class Image {
       if(Strings.nullToEmpty(link).trim().isEmpty()) {
          throw new UnsupportedOperationException("The image 'link' must not be null or empty");
       }
-      return new Image(link, this.id, this.altText, this.title, this.credit, this.width, this.height, this.mediaType, this.data);
+      return new Image(this.id, link, this.altText, this.title, this.credit, this.width, this.height, this.mediaType, this.data);
    }
 
    @Override

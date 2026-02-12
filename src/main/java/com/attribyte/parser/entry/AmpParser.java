@@ -118,14 +118,14 @@ public class AmpParser implements com.attribyte.parser.Parser {
    }
 
    private void parseTwitterMeta(final Element head, final Entry.Builder entry) {
-      if(!Strings.isNullOrEmpty(entry.getTitle())) {
+      if(Strings.isNullOrEmpty(entry.getTitle())) {
          Element twitterTitle = firstMatch(head, "meta[name=twitter:title]");
          String title = twitterTitle != null ? twitterTitle.attr("content").trim() : "";
          if(!title.isEmpty()) {
             entry.setTitle(title);
          }
       }
-      if(!Strings.isNullOrEmpty(entry.getSummary())) {
+      if(Strings.isNullOrEmpty(entry.getSummary())) {
          Element twitterDescription = firstMatch(head, "meta[name=twitter:description]");
          String summary = twitterDescription != null ? twitterDescription.attr("content").trim() : "";
          if(!summary.isEmpty()) {
@@ -214,7 +214,9 @@ public class AmpParser implements com.attribyte.parser.Parser {
          if(entry.getAuthors().size() == 0) {
             JsonNode author = obj.get("author");
             final String authorName;
-            if(author.isObject()) {
+            if(author == null || author.isNull()) {
+               authorName = "";
+            } else if(author.isObject()) {
                authorName = childText(author, "name").trim();
             } else if(author.isTextual()) {
                authorName = author.textValue().trim();

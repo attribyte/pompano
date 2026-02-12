@@ -59,7 +59,7 @@ public class SitemapParserTest extends ResourceTest {
 
       SitemapLink link2 = links.get(1);
       assertEquals("https://example.com/file2.html", link2.url);
-      assertEquals(SitemapLink.ChangeFrequency.NEVER, link1.changeFrequency);
-      assertEquals(0, link1.lastModifiedTimestamp);
+      assertEquals(SitemapLink.ChangeFrequency.NEVER, link2.changeFrequency);
+      assertEquals(0, link2.lastModifiedTimestamp);
    }
 }

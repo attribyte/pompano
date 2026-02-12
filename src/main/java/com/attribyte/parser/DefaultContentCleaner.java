@@ -40,7 +40,7 @@ public class DefaultContentCleaner implements ContentCleaner {
       cleanAndMarkImages(doc, defaultProtocol);
       cleanAndMarkEmbeds(doc, defaultProtocol);
       cleanAndMarkTwitterBlockquotes(doc);
-      doc = new Cleaner(DEFAULT_CONTENT_WHITELIST).clean(doc);
+      doc = new Cleaner(DEFAULT_CONTENT_SAFELIST).clean(doc);
       return doc;
    }
 
@@ -203,5 +203,5 @@ public class DefaultContentCleaner implements ContentCleaner {
    }
 
    private boolean withImages = false;
-   private static final Safelist DEFAULT_CONTENT_WHITELIST = contentSafelist();
+   private static final Safelist DEFAULT_CONTENT_SAFELIST = contentSafelist();
 }

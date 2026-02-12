@@ -234,7 +234,7 @@ public class OEmbedProvider {
             if(!providerURL.isEmpty()) {
                JsonNode endpointsNode = providerNode.path("endpoints");
                if(endpointsNode.isArray()) {
-                  List<Endpoint> endpoints = Lists.newArrayListWithExpectedSize(1024);
+                  List<Endpoint> endpoints = Lists.newArrayListWithExpectedSize(4);
                   for(JsonNode endpointNode : endpointsNode) {
                      String endpointURL = endpointNode.path("url").asText();
                      if(!endpointURL.isEmpty()) {

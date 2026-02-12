@@ -426,7 +426,7 @@ public class DateParser {
       long iday = 365L * (year - 1970L) + DMonth[month - 1] + (day - 1L); // Full days since 1/1/70
       iday = iday + (year - 1969L) / 4L; //Leap days since 1/1/70
 
-      if(month > 2 && ((year % 4) == 0)) { //If leap year and past Feb, add this year's leap day
+      if(month > 2 && ((year % 4) == 0) && ((year % 100) != 0 || (year % 400) == 0)) { //If leap year and past Feb, add this year's leap day
          iday++;
       }
 

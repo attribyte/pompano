@@ -203,7 +203,7 @@ public class Audio {
       if(Strings.nullToEmpty(link).trim().isEmpty()) {
          throw new UnsupportedOperationException("The audio 'link' must not be null or empty");
       }
-      return new Audio(link, this.id, this.altText, this.title, this.mediaType);
+      return new Audio(this.id, link, this.altText, this.title, this.mediaType);
    }
 
    /**
@@ -217,7 +217,7 @@ public class Audio {
       if(Strings.nullToEmpty(link).trim().isEmpty()) {
          throw new UnsupportedOperationException("The audio 'link' must not be null or empty");
       }
-      return new Audio(link, this.id, this.altText, this.title, mediaType);
+      return new Audio(this.id, link, this.altText, this.title, mediaType);
    }
 
    @Override

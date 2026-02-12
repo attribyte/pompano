@@ -124,7 +124,7 @@ public class MetadataViewer {
       });
 
       parsedPage.links("amphtml", null).forEach(link -> {
-         System.out.println("Atom Link: " + link.href);
+         System.out.println("AMP Link: " + link.href);
       });
 
 

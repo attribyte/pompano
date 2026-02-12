@@ -316,7 +316,7 @@ public class HTMLPageParser {
    /**
     * Find the "best" summary.
     * @param doc The source document.
-    * @return The "best" author or an empty string if none.
+    * @return The "best" summary or an empty string if none.
     */
    private static String bestSummary(final Document doc) {
       for(String pattern : descriptionMetaPatterns) {
@@ -1110,7 +1110,7 @@ public class HTMLPageParser {
    /**
     * Attempt to parse a date/time.
     * @param dateTimeStr The date/time string.
-    * @return The timestamp or {@code 0} if parse failed.
+    * @return The timestamp or {@code null} if parse failed.
     */
    static final Date parseDateTime(final String dateTimeStr) {
       if(Strings.isNullOrEmpty(dateTimeStr)) {
