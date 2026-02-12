@@ -252,12 +252,12 @@ public class Safelists {
          );
 
          @Override
-         protected boolean	isSafeTag(String tag) {
+         public boolean	isSafeTag(String tag) {
             return tagNames.contains(tag);
          }
 
          @Override
-         protected boolean	isSafeAttribute(String tagName, Element el, Attribute attr) {
+         public boolean	isSafeAttribute(String tagName, Element el, Attribute attr) {
             final String attributeName = attr.getKey();
             return attributeNames.contains(attributeName) || (attributeName.startsWith("data-") && attributeNames.contains("data-*"));
          }

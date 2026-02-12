@@ -18,8 +18,8 @@
 
 package com.attribyte.json;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
+import com.google.gson.Strictness;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import org.xml.sax.ContentHandler;
@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
 /**
  * A SAX parser for JSON documents.
@@ -126,12 +127,12 @@ public class JSONParser {
          if(!Strings.isNullOrEmpty((encoding))) {
             charStream = new InputStreamReader(stream, encoding);
          } else {
-            charStream = new InputStreamReader(stream, Charsets.UTF_8);
+            charStream = new InputStreamReader(stream, StandardCharsets.UTF_8);
          }
       }
 
       JsonReader reader = new JsonReader(charStream);
-      reader.setLenient(true);
+      reader.setStrictness(Strictness.LENIENT);
       handler.startDocument();
       JsonToken type = reader.peek();
       switch(type) {

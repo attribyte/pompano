@@ -19,9 +19,10 @@
 package com.attribyte.parser;
 
 import com.attribyte.parser.model.DataURI;
-import com.google.common.base.Charsets;
 import com.google.common.io.BaseEncoding;
 import org.junit.Test;
+
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.*;
 
@@ -66,7 +67,7 @@ public class DataURITest {
 
    @Test
    public void base64() {
-      String data = BaseEncoding.base64().encode("12345".getBytes(Charsets.UTF_8));
+      String data = BaseEncoding.base64().encode("12345".getBytes(StandardCharsets.UTF_8));
       String src = "data:text/plain;base64," + data;
       DataURI duri = new DataURI(src);
       assertEquals("text/plain", duri.mediaType);
@@ -76,7 +77,7 @@ public class DataURITest {
 
    @Test
    public void invalidBase64() {
-      String data = BaseEncoding.base64().encode("12345".getBytes(Charsets.UTF_8));
+      String data = BaseEncoding.base64().encode("12345".getBytes(StandardCharsets.UTF_8));
       String src = "data:text/plain;base64," + data + "INVALID";
       try {
          DataURI duri = new DataURI(src);

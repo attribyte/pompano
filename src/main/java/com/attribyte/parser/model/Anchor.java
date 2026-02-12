@@ -23,6 +23,7 @@ import com.google.common.base.Strings;
 import com.google.common.net.InternetDomainName;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Objects;
 
@@ -78,10 +79,10 @@ public class Anchor {
     */
    public boolean matchesDomain(final InternetDomainName checkDomain) {
       try {
-         URL url = new URL(href);
+         URL url = URI.create(href).toURL();
          String host = url.getHost();
          return host != null && InternetDomainName.isValid(host) && InternetDomainName.from(host).topPrivateDomain().equals(checkDomain.topPrivateDomain());
-      } catch(MalformedURLException | IllegalStateException e) {
+      } catch(MalformedURLException | IllegalArgumentException | IllegalStateException e) {
          return false;
       }
    }

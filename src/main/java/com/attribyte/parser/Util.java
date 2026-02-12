@@ -44,6 +44,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -185,8 +186,8 @@ public class Util {
       }
 
       try {
-         return new URL(link).getProtocol();
-      } catch(MalformedURLException me) {
+         return URI.create(link).toURL().getProtocol();
+      } catch(MalformedURLException | IllegalArgumentException e) {
          return null;
       }
    }
@@ -207,8 +208,8 @@ public class Util {
       }
 
       try {
-         return new URL(link).getHost();
-      } catch(MalformedURLException mue) {
+         return URI.create(link).toURL().getHost();
+      } catch(MalformedURLException | IllegalArgumentException e) {
          return null;
       }
    }
@@ -286,7 +287,7 @@ public class Util {
     */
    public static boolean endsWithIgnoreInvisible(final String match, final String source) {
       int sourcePos = source.length();
-      CharMatcher matcher = CharMatcher.invisible();
+      CharMatcher matcher = CharMatcher.whitespace();
       while(--sourcePos >= 0) {
          if(!matcher.matches(source.charAt(sourcePos))) {
             break;
@@ -319,7 +320,7 @@ public class Util {
       }
 
       int sourcePos = 0;
-      CharMatcher matcher = CharMatcher.invisible();
+      CharMatcher matcher = CharMatcher.whitespace();
       while(sourcePos++ < source.length()) {
          if(!matcher.matches(source.charAt(sourcePos))) {
             break;

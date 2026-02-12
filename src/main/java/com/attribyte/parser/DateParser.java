@@ -102,7 +102,7 @@ public class DateParser {
 
       //Find the first digit position - ignore the day of week and any leading spaces
 
-      while(pos < len && !CharMatcher.digit().matches(chars[pos])) {
+      while(pos < len && !CharMatcher.inRange('0', '9').matches(chars[pos])) {
          pos++;
       }
 

@@ -1,6 +1,5 @@
 package com.attribyte.parser.epub;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -80,7 +79,7 @@ public class EpubParser {
          throw new IOException("Missing 'mimetype' file");
       }
 
-      String checkType = new String(Files.toByteArray(mimetypeFile), Charsets.US_ASCII);
+      String checkType = new String(Files.toByteArray(mimetypeFile), StandardCharsets.US_ASCII);
       if(!supportedMimeTypes.contains(checkType.trim().toLowerCase())) {
          throw new IOException(String.format("Unsupported mime type, '%s'", checkType));
       }
@@ -94,7 +93,7 @@ public class EpubParser {
       int count = 0;
       for(File file : rootFiles) {
          try(FileInputStream fis = new FileInputStream(file)) {
-            Document packageDoc = Jsoup.parse(fis, Charsets.UTF_8.name(), "", Parser.xmlParser());
+            Document packageDoc = Jsoup.parse(fis, StandardCharsets.UTF_8.name(), "", Parser.xmlParser());
             Metadata metadata = new Metadata(packageDoc);
             Map<String, ManifestItem> files = manifestItems(file.getParentFile(), packageDoc);
             Spine spine = spine(packageDoc, files);
@@ -133,7 +132,7 @@ public class EpubParser {
 
       List<File> rootFiles = Lists.newArrayListWithExpectedSize(2);
       try(FileInputStream fis = new FileInputStream(containerFile)) {
-         Document doc = Jsoup.parse(fis, Charsets.UTF_8.name(), "", Parser.xmlParser());
+         Document doc = Jsoup.parse(fis, StandardCharsets.UTF_8.name(), "", Parser.xmlParser());
          Elements elements = doc.select("rootfile[full-path]");
          for(Element element : elements) {
             String path = element.attr("full-path").trim();
@@ -516,7 +515,7 @@ public class EpubParser {
       public Document document() throws IOException {
          if(mediaType.equalsIgnoreCase("application/xhtml+xml")) {
             try(FileInputStream fis = new FileInputStream(file)) {
-               return Jsoup.parse(fis, Charsets.UTF_8.name(), "", Parser.xmlParser());
+               return Jsoup.parse(fis, StandardCharsets.UTF_8.name(), "", Parser.xmlParser());
             }
          } else {
             return null;

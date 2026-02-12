@@ -18,10 +18,10 @@
 
 package com.attribyte.parser;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Base class for tests that require resources to be loaded from the classpath.
@@ -36,6 +36,6 @@ public abstract class ResourceTest {
     * @throws IOException on load failure.
     */
    protected String testResource(final String name) throws IOException {
-      return new String(ByteStreams.toByteArray(getClass().getResourceAsStream(name)), Charsets.UTF_8);
+      return new String(ByteStreams.toByteArray(getClass().getResourceAsStream(name)), StandardCharsets.UTF_8);
    }
 }

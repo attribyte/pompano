@@ -18,7 +18,6 @@
 
 package com.attribyte.parser.model;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -32,7 +31,9 @@ import org.jsoup.nodes.Document;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -104,15 +105,15 @@ public class Page {
    public void writeDebug(final File debugOutputDir) throws IOException {
 
       try {
-         URL url = new URL(canonicalLink);
+         URL url = URI.create(canonicalLink).toURL();
          String host = Strings.nullToEmpty(url.getHost()).trim();
-         String file = Hashing.sha256().hashString(canonicalLink, Charsets.UTF_8).toString().substring(0, 16);
+         String file = Hashing.sha256().hashString(canonicalLink, StandardCharsets.UTF_8).toString().substring(0, 16);
          File outputFile = new File(debugOutputDir, host + "/" + file);
          System.out.println("Writing to " + outputFile.getAbsolutePath());
          if(!outputFile.getParentFile().mkdirs()) {
             throw new IOException("Unable to create host directory");
          }
-         Files.write(toString().getBytes(Charsets.UTF_8), outputFile);
+         Files.write(toString().getBytes(StandardCharsets.UTF_8), outputFile);
          System.out.println("Wrote debug to " + outputFile.getAbsolutePath());
       } catch(IOException ioe) {
          throw ioe;
@@ -138,14 +139,14 @@ public class Page {
    public List<Anchor> externalAnchors() {
 
       try {
-         String host = new URL(canonicalLink).getHost();
+         String host = URI.create(canonicalLink).toURL().getHost();
          if(InternetDomainName.isValid(host)) {
             InternetDomainName pageDomain = InternetDomainName.from(host);
             return anchors.stream().filter(anchor -> !anchor.matchesDomain(pageDomain)).collect(Collectors.toList());
          } else {
             return anchors;
          }
-      } catch(MalformedURLException | IllegalStateException e) {
+      } catch(MalformedURLException | IllegalArgumentException | IllegalStateException e) {
          return anchors;
       }
    }

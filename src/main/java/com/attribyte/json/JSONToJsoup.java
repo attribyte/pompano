@@ -18,6 +18,7 @@
 
 package com.attribyte.json;
 
+import com.google.gson.Strictness;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import org.jsoup.nodes.Element;
@@ -92,7 +93,7 @@ public class JSONToJsoup {
                                final NullBehavior nullBehavior) throws IOException {
 
       JsonReader reader = new JsonReader(charStream);
-      reader.setLenient(true);
+      reader.setStrictness(Strictness.LENIENT);
       JsonToken type = reader.peek();
       switch(type) {
          case BEGIN_ARRAY:

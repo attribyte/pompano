@@ -31,6 +31,7 @@ import com.google.common.net.UrlEscapers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -90,9 +91,9 @@ public class OEmbedProvider {
        */
       public final URL buildRequestURL(final String url, final String format) throws MalformedURLException {
          if(url.contains("{format}")) {
-            return new URL(String.format(this.url.replace("{format}", format) + "?url=%s", PARAMETER_ESCAPER.escape(url)));
+            return URI.create(String.format(this.url.replace("{format}", format) + "?url=%s", PARAMETER_ESCAPER.escape(url))).toURL();
          } else {
-            return new URL(String.format(this.url + "?url=%s&format=%s", PARAMETER_ESCAPER.escape(url), format));
+            return URI.create(String.format(this.url + "?url=%s&format=%s", PARAMETER_ESCAPER.escape(url), format)).toURL();
          }
       }
 
@@ -207,7 +208,7 @@ public class OEmbedProvider {
     * @throws IOException on parse/load error.
     */
    public static ImmutableMap<String, OEmbedProvider> publishedProviders(final String url) throws IOException {
-      InputStream is = new URL(url).openStream();
+      InputStream is = URI.create(url).toURL().openStream();
       try {
          return fromJSON(new ObjectMapper().readTree(is));
       } catch(MalformedURLException mue) {

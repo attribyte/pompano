@@ -79,7 +79,7 @@ public class SitemapParser {
     * @return The list of links.
     */
    public static List<SitemapLink> parseSimple(final String response) {
-      List<String> lines = Splitter.on(CharMatcher.invisible())
+      List<String> lines = Splitter.on(CharMatcher.whitespace())
               .trimResults()
               .omitEmptyStrings()
               .limit(500)
