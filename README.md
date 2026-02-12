@@ -1,4 +1,6 @@
-# Pompano
+<p align="center">
+  <img src="logo.png" alt="Pompano" width="300">
+</p>
 
 Pompano is a Java library for extracting structured content and metadata from web pages, syndication feeds, and other common content formats. It parses raw HTML, RSS, Atom, AMP, oEmbed, and more into clean, immutable model objects representing entries, authors, images, videos, and audio — ready for indexing, storage, or display.
 
