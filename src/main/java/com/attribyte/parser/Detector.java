@@ -68,6 +68,7 @@ public interface Detector {
     */
    public static Format detect(final String body, final String contentType) {
 
+      // Primary: closing-tag heuristics (fast, works for well-formed feeds)
       if(endsWithIgnoreInvisible("</rss>", body) || endsWithIgnoreInvisible("</rdf:RDF>", body)) {
          return Format.RSS;
       } else if(endsWithIgnoreInvisible("</feed>", body)) {
@@ -78,8 +79,25 @@ public interface Detector {
          return Format.AMP;
       } else if(endsWithIgnoreInvisible("</html>", body) || Strings.nullToEmpty(contentType).startsWith("text/html")) {
          return Format.HTML;
-      } else {
-         return Format.UNKNOWN;
       }
+
+      // Fallback: content-type header (handles feeds with trailing comments, etc.)
+      String ct = Strings.nullToEmpty(contentType);
+      if(ct.contains("atom")) {
+         return Format.ATOM;
+      } else if(ct.contains("rss")) {
+         return Format.RSS;
+      }
+
+      // Last resort: look for root element tags in the body
+      if(body.contains("</feed>")) {
+         return Format.ATOM;
+      } else if(body.contains("</rss>") || body.contains("</rdf:RDF>")) {
+         return Format.RSS;
+      } else if(body.contains("</urlset>")) {
+         return Format.SITEMAP;
+      }
+
+      return Format.UNKNOWN;
    }
 }
