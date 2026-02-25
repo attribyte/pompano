@@ -18,6 +18,8 @@
 
 package com.attribyte.parser.epub;
 
+import com.attribyte.parser.model.Author;
+import com.attribyte.parser.model.Entry;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -656,5 +658,84 @@ public class EpubParser {
       }
 
       return files;
+   }
+
+   /**
+    * Convert an {@link EpubDocument} to a pompano {@link Entry}.
+    * @param doc The parsed epub document.
+    * @return The entry.
+    * @throws IOException on error reading merged content.
+    */
+   public static Entry toEntry(EpubDocument doc) throws IOException {
+      Metadata meta = doc.metadata;
+      Entry.Builder builder = new Entry.Builder();
+
+      builder.setTitle(meta.title.isEmpty() ? "Untitled EPUB" : meta.title);
+
+      for(String creator : meta.creators) {
+         builder.addAuthor(Author.builder(creator).build());
+      }
+
+      for(String subject : meta.subjects) {
+         builder.addTag(subject);
+      }
+
+      if(meta.publishedTimestamp > 0) {
+         builder.setPublishedTimestamp(meta.publishedTimestamp);
+      }
+
+      Document merged = doc.mergedDocument();
+      if(merged != null) {
+         builder.setCleanContent(merged.body().html());
+      }
+
+      return builder.build();
+   }
+
+   /**
+    * Parse an EPUB from raw bytes into a pompano {@link Entry}.
+    * @param epubBytes The EPUB file content.
+    * @param filename The original filename (used as title fallback).
+    * @return The parsed entry.
+    * @throws IOException on parse error.
+    */
+   public static Entry parse(byte[] epubBytes, String filename) throws IOException {
+      File tempDir = Files.createTempDir();
+      try {
+         File tempFile = new File(tempDir, filename != null ? filename : "upload.epub");
+         Files.write(epubBytes, tempFile);
+         List<EpubDocument> docs = parse(tempFile, tempDir, null, false);
+         if(docs.isEmpty()) {
+            throw new IOException("No documents found in EPUB");
+         }
+         Entry entry = toEntry(docs.get(0));
+         if(entry.title.isEmpty() && filename != null) {
+            int dot = filename.lastIndexOf('.');
+            String fallback = dot > 0 ? filename.substring(0, dot) : filename;
+            return new Entry.Builder()
+                    .setTitle(fallback)
+                    .setCleanContent(entry.cleanContent)
+                    .setAuthors(entry.authors)
+                    .setTags(entry.tags)
+                    .setPublishedTimestamp(entry.publishedTimestamp)
+                    .setSummary(entry.summary)
+                    .build();
+         }
+         return entry;
+      } finally {
+         deleteRecursive(tempDir);
+      }
+   }
+
+   private static void deleteRecursive(File file) {
+      if(file.isDirectory()) {
+         File[] children = file.listFiles();
+         if(children != null) {
+            for(File child : children) {
+               deleteRecursive(child);
+            }
+         }
+      }
+      file.delete();
    }
 }
