@@ -64,4 +64,33 @@ public class AtomParserTest extends ResourceTest {
       assertEquals("John Doe", author.name);
       assertEquals("johndoe@example.com", author.email);
    }
+
+   @Test
+   public void linkWithoutRel() throws IOException {
+      ParseResult res = new AtomParser().parse(testResource("atom_norel.xml"), "", new DefaultContentCleaner());
+      assertNotNull(res);
+      assertFalse(res.hasErrors());
+      assertTrue(res.resource.isPresent());
+      Resource parsedResource = res.resource.get();
+      assertEquals("Test Feed", parsedResource.title);
+      assertEquals(2, parsedResource.entries.size());
+
+      Entry entry0 = parsedResource.entries.get(0);
+      assertEquals("Test Entry", entry0.title);
+      assertEquals("https://example.com/articles/test-entry.html", entry0.canonicalLink);
+      assertEquals("https://example.com/articles/test-entry.html", entry0.id);
+
+      Entry entry1 = parsedResource.entries.get(1);
+      assertEquals("Tag ID Entry", entry1.title);
+      assertEquals("https://example.com/articles/tag-id.html", entry1.canonicalLink);
+      assertEquals("tag:example.com,2026-02-24:Tag-ID-Entry", entry1.id);
+   }
+
+   @Test
+   public void basicEntryHasId() throws IOException {
+      ParseResult res = new AtomParser().parse(testResource("atom.xml"), "", new DefaultContentCleaner());
+      assertTrue(res.resource.isPresent());
+      Entry entry = res.resource.get().entries.get(0);
+      assertEquals("urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a", entry.id);
+   }
 }

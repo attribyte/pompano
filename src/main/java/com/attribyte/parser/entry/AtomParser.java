@@ -103,6 +103,23 @@ public class AtomParser extends FeedParser {
          }
       }
 
+      // Atom spec: link without rel defaults to rel="alternate"
+      if(entry.getCanonicalLink() == null) {
+         for(Element link : elem.select("link:not([rel])")) {
+            String href = httpURL(link.attr("href"), protocol);
+            if(href != null) {
+               entry.setCanonicalLink(href);
+               break;
+            }
+         }
+      }
+
+      // Extract Atom entry <id> element
+      String atomId = childText(elem, "id");
+      if(!atomId.isEmpty()) {
+         entry.setId(atomId);
+      }
+
       Elements feedburnerLinks = elem.getElementsByTag("feedburner:origlink");
       for(Element flink : feedburnerLinks) {
          String href = httpURL(flink.text(), protocol);
