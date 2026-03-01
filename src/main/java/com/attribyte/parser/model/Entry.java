@@ -23,10 +23,13 @@ package com.attribyte.parser.model;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.jsoup.nodes.Document;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -347,6 +350,91 @@ public class Entry {
       }
 
       /**
+       * Gets an immutable list of topics.
+       * @return The list of topics.
+       */
+      public ImmutableList<String> getTopics() {
+         return topics != null ? ImmutableList.copyOf(topics) : ImmutableList.of();
+      }
+
+      /**
+       * Sets the list of topics.
+       * @param topics The list of topics.
+       * @return A self-reference.
+       */
+      public Builder setTopics(final List<String> topics) {
+         if(topics != null) {
+            this.topics = Lists.newArrayList(topics);
+         }
+         return this;
+      }
+
+      /**
+       * Adds a topic.
+       * @param topic The topic to add.
+       * @return A self-reference.
+       */
+      public Builder addTopic(final String topic) {
+         if(topics == null) {
+            topics = Lists.newArrayListWithExpectedSize(4);
+         }
+         topics.add(topic);
+         return this;
+      }
+
+      /**
+       * Gets an immutable map of metadata.
+       * @return The metadata map.
+       */
+      public ImmutableMap<String, String> getMetadata() {
+         return metadata != null ? ImmutableMap.copyOf(metadata) : ImmutableMap.of();
+      }
+
+      /**
+       * Sets the metadata map.
+       * @param metadata The metadata.
+       * @return A self-reference.
+       */
+      public Builder setMetadata(final Map<String, String> metadata) {
+         if(metadata != null) {
+            this.metadata = Maps.newLinkedHashMap(metadata);
+         }
+         return this;
+      }
+
+      /**
+       * Adds a metadata entry.
+       * @param name The metadata name.
+       * @param value The metadata value.
+       * @return A self-reference.
+       */
+      public Builder addMetadata(final String name, final String value) {
+         if(metadata == null) {
+            metadata = Maps.newLinkedHashMap();
+         }
+         metadata.put(name, value);
+         return this;
+      }
+
+      /**
+       * Gets the type.
+       * @return The type.
+       */
+      public String getType() {
+         return type;
+      }
+
+      /**
+       * Sets the type.
+       * @param type The type.
+       * @return A self-reference.
+       */
+      public Builder setType(final String type) {
+         this.type = type;
+         return this;
+      }
+
+      /**
        * Gets the rights.
        * @return The rigts.
        */
@@ -493,7 +581,7 @@ public class Entry {
                  publishedTimestamp, updatedTimestamp, authors,
                  primaryImage, images, primaryVideo, videos,
                  primaryAudio, audios,
-                 tags, rights, originalContent, citations);
+                 tags, topics, metadata, type, rights, originalContent, citations);
       }
 
       private String id;
@@ -513,6 +601,9 @@ public class Entry {
       private Audio primaryAudio;
       private List<Audio> audios;
       private List<String> tags;
+      private List<String> topics;
+      private Map<String, String> metadata;
+      private String type;
       private String rights;
       private List<Link> citations;
    }
@@ -529,6 +620,9 @@ public class Entry {
                  final Audio primaryAudio,
                  final List<Audio> audios,
                  final List<String> tags,
+                 final List<String> topics,
+                 final Map<String, String> metadata,
+                 final String type,
                  final String rights, final Document originalContent,
                  final List<Link> citations) {
       this.id = Strings.nullToEmpty(id);
@@ -547,6 +641,9 @@ public class Entry {
       this.primaryAudio = primaryAudio == null ? Optional.empty() : Optional.of(primaryAudio);
       this.audios = audios == null ? ImmutableList.of() : ImmutableList.copyOf(audios);
       this.tags = tags == null ? ImmutableList.of() : ImmutableList.copyOf(tags);
+      this.topics = topics == null ? ImmutableList.of() : ImmutableList.copyOf(topics);
+      this.metadata = metadata == null ? ImmutableMap.of() : ImmutableMap.copyOf(metadata);
+      this.type = Strings.nullToEmpty(type);
       this.rights = Strings.nullToEmpty(rights);
       this.originalContent = originalContent;
       this.citations = citations != null ? ImmutableList.copyOf(citations) : ImmutableList.of();
@@ -579,6 +676,9 @@ public class Entry {
               .add("primaryAudio", primaryAudio)
               .add("audios", audios)
               .add("tags", tags)
+              .add("topics", topics)
+              .add("metadata", metadata)
+              .add("type", type)
               .add("rights", rights)
               .add("originalContent", originalContent)
               .add("citations", citations)
@@ -664,6 +764,21 @@ public class Entry {
     * The immutable list of tags.
     */
    public final ImmutableList<String> tags;
+
+   /**
+    * The immutable list of topics.
+    */
+   public final ImmutableList<String> topics;
+
+   /**
+    * The immutable map of metadata.
+    */
+   public final ImmutableMap<String, String> metadata;
+
+   /**
+    * The type or an empty string if none.
+    */
+   public final String type;
 
    /**
     * The rights or an empty string if none.
