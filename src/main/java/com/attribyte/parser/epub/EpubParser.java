@@ -693,6 +693,120 @@ public class EpubParser {
    }
 
    /**
+    * Parse an EPUB into individual chapter entries.
+    * <p>
+    * If the spine has only one linear XHTML item, returns a single entry (same as {@link #parse(byte[], String)}).
+    * Otherwise, each linear XHTML item becomes a separate entry with the chapter title extracted from
+    * the first heading element ({@code <h1>}, then {@code <h2>}, then {@code <title>}) or "Chapter N" as fallback.
+    * </p>
+    * @param epubBytes The EPUB file content.
+    * @param filename The original filename (used as title fallback).
+    * @return The list of chapter entries.
+    * @throws IOException on parse error.
+    */
+   public static List<Entry> parseChapters(byte[] epubBytes, String filename) throws IOException {
+      File tempDir = Files.createTempDir();
+      try {
+         File tempFile = new File(tempDir, filename != null ? filename : "upload.epub");
+         Files.write(epubBytes, tempFile);
+         List<EpubDocument> docs = parse(tempFile, tempDir, null, false);
+         if(docs.isEmpty()) {
+            throw new IOException("No documents found in EPUB");
+         }
+
+         EpubDocument doc = docs.get(0);
+         Metadata meta = doc.metadata;
+         List<ManifestItem> chapters = doc.spine.linearXHTML();
+
+         if(chapters.size() <= 1) {
+            return List.of(applyFilenameFallback(toEntry(doc), filename));
+         }
+
+         String bookTitle = meta.title.isEmpty() ? filenameTitle(filename) : meta.title;
+         List<Entry> entries = Lists.newArrayListWithExpectedSize(chapters.size());
+         int chapterIndex = 0;
+         for(ManifestItem item : chapters) {
+            Document chapterDoc = item.document();
+            if(chapterDoc == null) {
+               continue;
+            }
+
+            String chapterHtml = chapterDoc.body().html().trim();
+            if(chapterHtml.isEmpty()) {
+               continue;
+            }
+
+            String chapterTitle = extractChapterTitle(chapterDoc, chapterIndex);
+
+            Entry.Builder builder = new Entry.Builder();
+            builder.setTitle(chapterTitle);
+            builder.setCleanContent(chapterHtml);
+
+            for(String creator : meta.creators) {
+               builder.addAuthor(Author.builder(creator).build());
+            }
+            for(String subject : meta.subjects) {
+               builder.addTag(subject);
+            }
+            if(meta.publishedTimestamp > 0) {
+               builder.setPublishedTimestamp(meta.publishedTimestamp);
+            }
+
+            builder.addMetadata("chapter_index", String.valueOf(chapterIndex));
+            builder.addMetadata("book_title", bookTitle);
+
+            entries.add(builder.build());
+            chapterIndex++;
+         }
+
+         return entries.isEmpty() ? List.of(applyFilenameFallback(toEntry(doc), filename)) : entries;
+      } finally {
+         deleteRecursive(tempDir);
+      }
+   }
+
+   /**
+    * Extract a chapter title from an XHTML document.
+    * Tries h1, h2, title element, then falls back to "Chapter N".
+    */
+   private static String extractChapterTitle(Document doc, int index) {
+      for(String selector : new String[]{"h1", "h2", "h3"}) {
+         Element heading = doc.selectFirst(selector);
+         if(heading != null) {
+            String text = heading.text().trim();
+            if(!text.isEmpty()) {
+               return text;
+            }
+         }
+      }
+      String title = doc.title();
+      if(title != null && !title.trim().isEmpty()) {
+         return title.trim();
+      }
+      return "Chapter " + (index + 1);
+   }
+
+   private static String filenameTitle(String filename) {
+      if(filename == null) return "Untitled";
+      int dot = filename.lastIndexOf('.');
+      return dot > 0 ? filename.substring(0, dot) : filename;
+   }
+
+   private static Entry applyFilenameFallback(Entry entry, String filename) {
+      if(!entry.title.isEmpty() || filename == null) {
+         return entry;
+      }
+      return new Entry.Builder()
+              .setTitle(filenameTitle(filename))
+              .setCleanContent(entry.cleanContent)
+              .setAuthors(entry.authors)
+              .setTags(entry.tags)
+              .setPublishedTimestamp(entry.publishedTimestamp)
+              .setSummary(entry.summary)
+              .build();
+   }
+
+   /**
     * Parse an EPUB from raw bytes into a pompano {@link Entry}.
     * @param epubBytes The EPUB file content.
     * @param filename The original filename (used as title fallback).
