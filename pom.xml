@@ -31,8 +31,8 @@
     <name>Pompano Page Parsers</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jacksonVersion>2.21.0</jacksonVersion>
-        <jacksonDatabindVersion>2.21.0</jacksonDatabindVersion>
+        <jacksonVersion>2.21.1</jacksonVersion>
+        <jacksonDatabindVersion>2.21.1</jacksonDatabindVersion>
     </properties>
     <description>
         Pompano is a suite of parsers for various feed and page formats.
