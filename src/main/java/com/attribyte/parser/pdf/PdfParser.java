@@ -36,32 +36,49 @@ import java.util.List;
 /**
  * Parses PDF files into pompano {@link Entry} objects.
  * <p>
- * Uses PDFBox to extract text with structural analysis — detecting paragraphs via
- * PDFBox's built-in spatial heuristics, and headings/titles/authors via font size analysis.
+ * Fallback chain for multi-entry splitting:
+ * <ol>
+ *   <li>Tagged PDF structure tree (InDesign Story boundaries) → split by stories</li>
+ *   <li>PDF outline with 2+ bookmarks → split by bookmarks</li>
+ *   <li>Structural analysis (font sizes) → split at level-1 headings</li>
+ *   <li>Single entry</li>
+ * </ol>
  * </p>
  */
 public class PdfParser {
 
    /**
-    * Parse a PDF into sections based on the document outline (bookmarks) or heading structure.
-    * <p>
-    * Fallback chain:
-    * <ol>
-    *   <li>PDF outline with 2+ bookmarks → split by bookmarks (with structural paragraph detection)</li>
-    *   <li>No outline → structural analysis → if 2+ section breaks, split at level-1 headings</li>
-    *   <li>No section breaks → single entry (same as {@link #parse(byte[], String)})</li>
-    * </ol>
-    * </p>
+    * Parse a PDF into sections using default configuration.
+    */
+   public static List<Entry> parseSections(byte[] pdfBytes, String filename) throws IOException {
+      return parseSections(pdfBytes, filename, PdfParserConfig.DEFAULT);
+   }
+
+   /**
+    * Parse a PDF into sections with custom configuration.
     * @param pdfBytes The PDF file content.
     * @param filename The original filename (used as title fallback).
+    * @param config Parser configuration for tuning heuristics.
     * @return The list of section entries.
     * @throws IOException on parse error.
     */
-   public static List<Entry> parseSections(byte[] pdfBytes, String filename) throws IOException {
+   public static List<Entry> parseSections(byte[] pdfBytes, String filename,
+                                            PdfParserConfig config) throws IOException {
       try(PDDocument doc = PDDocument.load(pdfBytes)) {
+
+         // Path 1: Tagged PDF structure tree.
+         if(TaggedPdfExtractor.isTaggedPdf(doc)) {
+            List<TaggedPdfExtractor.TaggedStory> stories = TaggedPdfExtractor.extractStories(doc);
+            List<Entry> entries = parseSectionsByTags(doc, stories, filename, config);
+            if(entries.size() >= 2) {
+               return entries;
+            }
+            // Fall through if tagged extraction produced only 0-1 useful entries.
+         }
+
          PDDocumentOutline outline = doc.getDocumentCatalog().getDocumentOutline();
 
-         // Path 1: PDF outline with 2+ bookmarks.
+         // Path 2: PDF outline with 2+ bookmarks.
          if(outline != null && outline.hasChildren()) {
             List<PDOutlineItem> items = Lists.newArrayList();
             for(PDOutlineItem item : outline.children()) {
@@ -69,31 +86,39 @@ public class PdfParser {
             }
 
             if(items.size() >= 2) {
-               return parseSectionsByOutline(doc, items, filename);
+               return parseSectionsByOutline(doc, items, filename, config);
             }
          }
 
-         // Path 2: Structural analysis — split by level-1 headings.
-         PdfStructure structure = extractStructure(doc);
-         if(structure.sectionBreaks.size() >= 2) {
+         // Path 3: Structural analysis — split by level-1 headings.
+         PdfStructure structure = extractStructure(doc, config);
+         if(structure.sectionBreaks.size() >= config.minSectionBreaks) {
             return parseSectionsByStructure(doc, structure, filename);
          }
 
-         // Path 3: Single entry.
+         // Path 4: Single entry.
          return List.of(buildSingleEntry(doc, structure, filename));
       }
    }
 
    /**
-    * Parse a PDF from raw bytes.
+    * Parse a PDF from raw bytes using default configuration.
+    */
+   public static Entry parse(byte[] pdfBytes, String filename) throws IOException {
+      return parse(pdfBytes, filename, PdfParserConfig.DEFAULT);
+   }
+
+   /**
+    * Parse a PDF from raw bytes with custom configuration.
     * @param pdfBytes The PDF file content.
     * @param filename The original filename (used as title fallback).
+    * @param config Parser configuration for tuning heuristics.
     * @return The parsed entry.
     * @throws IOException on parse error.
     */
-   public static Entry parse(byte[] pdfBytes, String filename) throws IOException {
+   public static Entry parse(byte[] pdfBytes, String filename, PdfParserConfig config) throws IOException {
       try(PDDocument doc = PDDocument.load(pdfBytes)) {
-         PdfStructure structure = extractStructure(doc);
+         PdfStructure structure = extractStructure(doc, config);
          return buildSingleEntry(doc, structure, filename);
       }
    }
@@ -133,8 +158,105 @@ public class PdfParser {
       return builder.build();
    }
 
+   private static List<Entry> parseSectionsByTags(PDDocument doc,
+                                                   List<TaggedPdfExtractor.TaggedStory> stories,
+                                                   String filename, PdfParserConfig config) {
+      PDDocumentInformation info = doc.getDocumentInformation();
+
+      String docTitle = info != null ? Strings.emptyToNull(Strings.nullToEmpty(info.getTitle()).trim()) : null;
+      if(docTitle == null) {
+         docTitle = titleFromFilename(filename);
+      }
+
+      String author = info != null ? Strings.emptyToNull(Strings.nullToEmpty(info.getAuthor()).trim()) : null;
+      long publishedMillis = 0;
+      if(info != null && info.getCreationDate() != null) {
+         publishedMillis = info.getCreationDate().getTimeInMillis();
+      }
+
+      int minContent = config.minStoryContentLength;
+
+      // First pass: collect eligible stories and look for heading → body pairs.
+      List<TaggedPdfExtractor.TaggedStory> eligible = Lists.newArrayList();
+      for(TaggedPdfExtractor.TaggedStory story : stories) {
+         if(story.isJunk()) continue;
+         TaggedPdfExtractor.StoryCategory cat = story.categorize();
+         if(cat == TaggedPdfExtractor.StoryCategory.CREDIT
+                 || cat == TaggedPdfExtractor.StoryCategory.COVER) {
+            continue;
+         }
+         eligible.add(story);
+      }
+
+      List<Entry> entries = Lists.newArrayList();
+      for(int i = 0; i < eligible.size(); i++) {
+         TaggedPdfExtractor.TaggedStory story = eligible.get(i);
+
+         // Skip non-substantial stories unless they're headings that can pair with the next story.
+         if(!story.isSubstantial(minContent)) {
+            if(story.hasHeadingStyle() && i + 1 < eligible.size()) {
+               TaggedPdfExtractor.TaggedStory next = eligible.get(i + 1);
+               if(next.isSubstantial(minContent) && Math.abs(next.pageIndex - story.pageIndex) <= 1) {
+                  continue; // Heading consumed when we process the next story.
+               }
+            }
+            continue;
+         }
+
+         String html = story.toHtml();
+         if(html.isEmpty()) continue;
+
+         // Look backward for a heading story to use as title.
+         String title = null;
+         if(i > 0) {
+            TaggedPdfExtractor.TaggedStory prev = eligible.get(i - 1);
+            if(!prev.isSubstantial(minContent) && prev.hasHeadingStyle()
+                    && Math.abs(story.pageIndex - prev.pageIndex) <= 1) {
+               title = prev.text.trim();
+               if(title.length() > 120) {
+                  title = title.substring(0, 117).trim() + "...";
+               }
+            }
+         }
+
+         // Fallback: use heading style text within this story, or truncate content.
+         if(title == null && story.hasHeadingStyle()) {
+            String text = story.text;
+            int nl = text.indexOf('\n');
+            if(nl < 0) nl = text.indexOf(". ");
+            if(nl > 0 && nl <= 120) {
+               title = text.substring(0, nl).trim();
+            }
+         }
+         if(title == null) {
+            title = story.text.length() > 80
+                    ? story.text.substring(0, 77).trim() + "..."
+                    : story.text;
+         }
+
+         Entry.Builder builder = new Entry.Builder();
+         builder.setTitle(title);
+         builder.setCleanContent(html);
+         if(author != null) {
+            builder.addAuthor(Author.builder(author).build());
+         }
+         if(publishedMillis > 0) {
+            builder.setPublishedTimestamp(publishedMillis);
+         }
+         builder.addMetadata("section_index", String.valueOf(entries.size()));
+         builder.addMetadata("document_title", docTitle);
+         builder.addMetadata("page_start", String.valueOf(story.pageIndex + 1));
+         builder.addMetadata("split_method", "tagged");
+
+         entries.add(builder.build());
+      }
+
+      return entries;
+   }
+
    private static List<Entry> parseSectionsByOutline(PDDocument doc, List<PDOutlineItem> items,
-                                                     String filename) throws IOException {
+                                                     String filename, PdfParserConfig config)
+           throws IOException {
       PDDocumentInformation info = doc.getDocumentInformation();
       int totalPages = doc.getNumberOfPages();
 
@@ -173,7 +295,7 @@ public class PdfParser {
 
          if(endPage < startPage) endPage = startPage;
 
-         PdfStructure sectionStructure = extractStructure(doc, startPage, endPage);
+         PdfStructure sectionStructure = extractStructure(doc, startPage, endPage, config);
          String html = sectionStructure.toHtml();
 
          Entry.Builder builder = new Entry.Builder();
@@ -271,22 +393,24 @@ public class PdfParser {
       return entries;
    }
 
-   private static PdfStructure extractStructure(PDDocument doc) throws IOException {
+   private static PdfStructure extractStructure(PDDocument doc, PdfParserConfig config)
+           throws IOException {
       StructuralTextStripper stripper = new StructuralTextStripper();
       StringWriter writer = new StringWriter();
       stripper.writeText(doc, writer);
       List<PdfLine> lines = stripper.getLines();
-      return PdfStructure.analyze(lines, doc.getNumberOfPages());
+      return PdfStructure.analyze(lines, doc.getNumberOfPages(), config);
    }
 
-   private static PdfStructure extractStructure(PDDocument doc, int startPage, int endPage) throws IOException {
+   private static PdfStructure extractStructure(PDDocument doc, int startPage, int endPage,
+                                                 PdfParserConfig config) throws IOException {
       StructuralTextStripper stripper = new StructuralTextStripper();
       stripper.setStartPage(startPage);
       stripper.setEndPage(endPage);
       StringWriter writer = new StringWriter();
       stripper.writeText(doc, writer);
       List<PdfLine> lines = stripper.getLines();
-      return PdfStructure.analyze(lines, doc.getNumberOfPages());
+      return PdfStructure.analyze(lines, doc.getNumberOfPages(), config);
    }
 
    private static int resolvePageNumber(PDOutlineItem item, PDDocument doc) {
@@ -317,12 +441,6 @@ public class PdfParser {
          PDDocumentInformation info = doc.getDocumentInformation();
          int totalPages = doc.getNumberOfPages();
 
-         StructuralTextStripper stripper = new StructuralTextStripper();
-         StringWriter sw = new StringWriter();
-         stripper.writeText(doc, sw);
-         List<PdfLine> lines = stripper.getLines();
-         PdfStructure structure = PdfStructure.analyze(lines, totalPages);
-
          StringBuilder out = new StringBuilder();
          out.append("=== PDF Debug: ").append(filename).append(" ===\n");
          out.append("Pages: ").append(totalPages).append("\n");
@@ -345,8 +463,23 @@ public class PdfParser {
             out.append("Outline: none\n");
          }
 
-         // Structural detection results.
-         out.append("\n--- Detected ---\n");
+         // Tagged PDF.
+         boolean isTagged = TaggedPdfExtractor.isTaggedPdf(doc);
+         out.append("Tagged PDF: ").append(isTagged ? "YES" : "NO").append("\n");
+
+         if(isTagged) {
+            List<TaggedPdfExtractor.TaggedStory> stories = TaggedPdfExtractor.extractStories(doc);
+            out.append("\n").append(TaggedPdfExtractor.debugTaggedStructure(doc, stories));
+         }
+
+         // Heuristic structural analysis.
+         StructuralTextStripper stripper = new StructuralTextStripper();
+         StringWriter sw = new StringWriter();
+         stripper.writeText(doc, sw);
+         List<PdfLine> lines = stripper.getLines();
+         PdfStructure structure = PdfStructure.analyze(lines, totalPages);
+
+         out.append("\n--- Heuristic Analysis ---\n");
          out.append("Title: ").append(structure.detectedTitle != null ? structure.detectedTitle : "(none)").append("\n");
          out.append("Author: ").append(structure.detectedAuthor != null ? structure.detectedAuthor : "(none)").append("\n");
          out.append("Section breaks: ").append(structure.sectionBreaks.size()).append("\n");

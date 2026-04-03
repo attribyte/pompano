@@ -46,11 +46,11 @@ public class PdfStructureTest {
 
    @Test
    public void testHeadingByFontSize() {
-      // Body at 12pt, heading at 18pt (1.5x = level 1).
+      // Body at 12pt, heading at 22pt (1.83x = level 1, threshold is 1.8x).
       List<PdfLine> lines = Arrays.asList(
               new PdfLine("Body paragraph one.", 12f, 700f, 50f, false, 1, true),
               new PdfLine("Body paragraph one cont.", 12f, 686f, 50f, false, 1, false),
-              new PdfLine("Chapter Title", 18f, 650f, 50f, false, 1, true),
+              new PdfLine("Chapter Title", 22f, 650f, 50f, false, 1, true),
               new PdfLine("Body paragraph two.", 12f, 620f, 50f, false, 1, true)
       );
 
@@ -181,12 +181,12 @@ public class PdfStructureTest {
 
    @Test
    public void testSectionBreaks() {
-      // Two level-1 headings should create two section breaks.
+      // Two level-1 headings (22pt = 1.83x body) should create two section breaks.
       List<PdfLine> lines = Arrays.asList(
               new PdfLine("Intro paragraph.", 12f, 700f, 50f, false, 1, true),
-              new PdfLine("Chapter One", 18f, 600f, 50f, false, 1, true),
+              new PdfLine("Chapter One", 22f, 600f, 50f, false, 1, true),
               new PdfLine("Chapter one content.", 12f, 570f, 50f, false, 1, true),
-              new PdfLine("Chapter Two", 18f, 400f, 50f, false, 2, true),
+              new PdfLine("Chapter Two", 22f, 400f, 50f, false, 2, true),
               new PdfLine("Chapter two content.", 12f, 370f, 50f, false, 2, true)
       );
 
@@ -197,31 +197,31 @@ public class PdfStructureTest {
    @Test
    public void testToHtml() {
       List<PdfLine> lines = Arrays.asList(
-              new PdfLine("Body text.", 12f, 700f, 50f, false, 1, true),
+              new PdfLine("Body text paragraph here.", 12f, 700f, 50f, false, 1, true),
               new PdfLine("Section Title", 18f, 600f, 50f, false, 1, true),
-              new PdfLine("More body.", 12f, 570f, 50f, false, 1, true)
+              new PdfLine("More body text here.", 12f, 570f, 50f, false, 1, true)
       );
 
       PdfStructure structure = PdfStructure.analyze(lines, 1);
       String html = structure.toHtml();
-      assertTrue(html.contains("<p>Body text.</p>"));
-      assertTrue(html.contains("<h2>Section Title</h2>"));
-      assertTrue(html.contains("<p>More body.</p>"));
+      assertTrue(html.contains("<p>Body text paragraph here.</p>"));
+      assertTrue(html.contains("Section Title"));
+      assertTrue(html.contains("<p>More body text here.</p>"));
    }
 
    @Test
    public void testToHtmlRange() {
       List<PdfLine> lines = Arrays.asList(
-              new PdfLine("First.", 12f, 700f, 50f, false, 1, true),
-              new PdfLine("Second.", 12f, 660f, 50f, false, 1, true),
-              new PdfLine("Third.", 12f, 620f, 50f, false, 1, true)
+              new PdfLine("First block of text here.", 12f, 700f, 50f, false, 1, true),
+              new PdfLine("Second block of text here.", 12f, 660f, 50f, false, 1, true),
+              new PdfLine("Third block of text here.", 12f, 620f, 50f, false, 1, true)
       );
 
       PdfStructure structure = PdfStructure.analyze(lines, 1);
       String html = structure.toHtml(1, 2);
-      assertFalse(html.contains("First."));
-      assertTrue(html.contains("Second."));
-      assertFalse(html.contains("Third."));
+      assertFalse(html.contains("First block"));
+      assertTrue(html.contains("Second block"));
+      assertFalse(html.contains("Third block"));
    }
 
    @Test

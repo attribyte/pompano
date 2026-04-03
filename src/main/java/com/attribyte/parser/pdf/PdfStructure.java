@@ -21,7 +21,6 @@ package com.attribyte.parser.pdf;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-import java.util.Arrays;
 import java.util.List;
 
 final class PdfStructure {
@@ -44,21 +43,28 @@ final class PdfStructure {
    }
 
    PdfStructure(String detectedTitle, String detectedAuthor,
-                ImmutableList<PdfBlock> blocks, ImmutableList<Integer> sectionBreaks) {
+                ImmutableList<PdfBlock> blocks, ImmutableList<Integer> sectionBreaks,
+                PdfParserConfig config) {
       this.detectedTitle = detectedTitle;
       this.detectedAuthor = detectedAuthor;
       this.blocks = blocks;
       this.sectionBreaks = sectionBreaks;
+      this.config = config;
    }
 
    final String detectedTitle;
    final String detectedAuthor;
    final ImmutableList<PdfBlock> blocks;
    final ImmutableList<Integer> sectionBreaks;
+   final PdfParserConfig config;
 
    static PdfStructure analyze(List<PdfLine> lines, int totalPages) {
+      return analyze(lines, totalPages, PdfParserConfig.DEFAULT);
+   }
+
+   static PdfStructure analyze(List<PdfLine> lines, int totalPages, PdfParserConfig config) {
       if(lines.isEmpty()) {
-         return new PdfStructure(null, null, ImmutableList.of(), ImmutableList.of());
+         return new PdfStructure(null, null, ImmutableList.of(), ImmutableList.of(), config);
       }
 
       // Step 1 — Compute body font size (mode of all lines).
@@ -142,8 +148,8 @@ final class PdfStructure {
             continue;
          }
 
-         if(isHeading(text, first.fontSize, first.isBold, bodyFontSize, group.lines.size())) {
-            int level = headingLevel(first.fontSize, first.isBold, bodyFontSize);
+         if(isHeading(text, first.fontSize, first.isBold, bodyFontSize, group.lines.size(), config)) {
+            int level = headingLevel(first.fontSize, first.isBold, bodyFontSize, config);
             blocks.add(new PdfBlock(BlockType.HEADING, text, level, first.pageNumber));
             if(level == 1) {
                sectionBreaks.add(blocks.size() - 1);
@@ -154,7 +160,7 @@ final class PdfStructure {
       }
 
       return new PdfStructure(detectedTitle, detectedAuthor,
-              ImmutableList.copyOf(blocks), ImmutableList.copyOf(sectionBreaks));
+              ImmutableList.copyOf(blocks), ImmutableList.copyOf(sectionBreaks), config);
    }
 
    String toHtml() {
@@ -166,6 +172,10 @@ final class PdfStructure {
       int end = Math.min(toBlock, blocks.size());
       for(int i = fromBlock; i < end; i++) {
          PdfBlock block = blocks.get(i);
+         // Skip very short fragments (page numbers, rotated text artifacts).
+         if(block.text.length() < config.minBlockTextLength && block.type == BlockType.PARAGRAPH) {
+            continue;
+         }
          switch(block.type) {
             case HEADING:
                String tag = block.headingLevel == 1 ? "h2" : "h3";
@@ -223,18 +233,20 @@ final class PdfStructure {
    }
 
    private static boolean isHeading(String text, float fontSize, boolean isBold,
-                                    float bodyFontSize, int lineCount) {
-      if(text.length() > 120 || lineCount > 2) return false;
+                                    float bodyFontSize, int lineCount, PdfParserConfig config) {
+      if(text.length() > config.maxHeadingTextLength || lineCount > config.maxHeadingLineCount) return false;
+      if(text.length() < 3) return false;
 
-      boolean sizeQualifies = fontSize >= bodyFontSize * 1.2f;
+      boolean sizeQualifies = fontSize >= bodyFontSize * config.headingMinRatio;
       boolean boldQualifies = isBold && fontSize >= bodyFontSize * 1.0f;
 
       return sizeQualifies || boldQualifies;
    }
 
-   private static int headingLevel(float fontSize, boolean isBold, float bodyFontSize) {
-      if(fontSize >= bodyFontSize * 1.5f) return 1;
-      if(isBold && fontSize >= bodyFontSize * 1.3f) return 1;
+   private static int headingLevel(float fontSize, boolean isBold, float bodyFontSize,
+                                    PdfParserConfig config) {
+      if(fontSize >= bodyFontSize * config.sectionBreakMinRatio) return 1;
+      if(isBold && fontSize >= bodyFontSize * config.boldSectionBreakMinRatio) return 1;
       return 2;
    }
 

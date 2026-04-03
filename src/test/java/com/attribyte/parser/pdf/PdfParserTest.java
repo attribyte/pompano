@@ -266,7 +266,7 @@ public class PdfParserTest {
 
    private static byte[] createPdfWithHeadingSections() throws Exception {
       try(PDDocument doc = new PDDocument()) {
-         // Page 1 — body + heading.
+         // Page 1 — body + heading at 22pt (1.83x body = level 1).
          PDPage page1 = new PDPage();
          doc.addPage(page1);
          try(PDPageContentStream cs = new PDPageContentStream(doc, page1)) {
@@ -279,7 +279,7 @@ public class PdfParserTest {
             }
 
             cs.beginText();
-            cs.setFont(PDType1Font.HELVETICA, 18);
+            cs.setFont(PDType1Font.HELVETICA, 22);
             cs.newLineAtOffset(50, 550);
             cs.showText("First Major Section");
             cs.endText();
@@ -298,7 +298,7 @@ public class PdfParserTest {
          doc.addPage(page2);
          try(PDPageContentStream cs = new PDPageContentStream(doc, page2)) {
             cs.beginText();
-            cs.setFont(PDType1Font.HELVETICA, 18);
+            cs.setFont(PDType1Font.HELVETICA, 22);
             cs.newLineAtOffset(50, 700);
             cs.showText("Second Major Section");
             cs.endText();
