@@ -24,7 +24,6 @@ import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitDestination;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
@@ -96,11 +95,273 @@ public class PdfParserTest {
 
    @Test
    public void testParseSectionsSingleBookmark() throws Exception {
-      // A PDF with only one bookmark should fall back to single entry.
       byte[] pdfBytes = createPdfWithSingleBookmark();
 
       List<Entry> sections = PdfParser.parseSections(pdfBytes, "single-bm.pdf");
       assertEquals(1, sections.size());
+   }
+
+   @Test
+   public void testParagraphBreaks() throws Exception {
+      // Two text blocks with large vertical gap should become separate paragraphs.
+      byte[] pdfBytes = createPdfWithParagraphGap();
+
+      Entry entry = PdfParser.parse(pdfBytes, "paragraphs.pdf");
+      String content = entry.cleanContent;
+      // Should contain at least two <p> tags.
+      int pCount = countOccurrences(content, "<p>");
+      assertTrue("Expected 2+ paragraphs, got " + pCount, pCount >= 2);
+   }
+
+   @Test
+   public void testHeadingDetection() throws Exception {
+      // 18pt heading + 12pt body should produce an h2 tag.
+      byte[] pdfBytes = createPdfWithHeading();
+
+      Entry entry = PdfParser.parse(pdfBytes, "heading.pdf");
+      assertTrue("Expected h2 or h3 in content: " + entry.cleanContent,
+              entry.cleanContent.contains("<h2>") || entry.cleanContent.contains("<h3>"));
+   }
+
+   @Test
+   public void testTitleDetection() throws Exception {
+      // 24pt title, no metadata — should detect title from content.
+      byte[] pdfBytes = createPdfWithVisualTitle();
+
+      Entry entry = PdfParser.parse(pdfBytes, "visual-title.pdf");
+      assertEquals("Important Research Paper", entry.title);
+   }
+
+   @Test
+   public void testSectionSplittingByHeadings() throws Exception {
+      // Multi-page PDF, no outline, clear headings → multiple entries.
+      byte[] pdfBytes = createPdfWithHeadingSections();
+
+      List<Entry> sections = PdfParser.parseSections(pdfBytes, "sections.pdf");
+      assertTrue("Expected 2+ sections from heading splitting, got " + sections.size(),
+              sections.size() >= 2);
+   }
+
+   @Test
+   public void testFallbackChain() throws Exception {
+      // No outline + no headings → single entry.
+      byte[] pdfBytes = createTestPdf("Plain Doc", null, "Just plain text.");
+
+      List<Entry> sections = PdfParser.parseSections(pdfBytes, "plain.pdf");
+      assertEquals(1, sections.size());
+   }
+
+   @Test
+   public void testOutlinePreferred() throws Exception {
+      // Outline + detectable headings → outline wins.
+      byte[] pdfBytes = createPdfWithBookmarksAndHeadings();
+
+      List<Entry> sections = PdfParser.parseSections(pdfBytes, "both.pdf");
+      // Outline has 2 bookmarks, so should split by outline (2 sections), not headings.
+      assertEquals(2, sections.size());
+      assertEquals("Part One", sections.get(0).title);
+      assertEquals("Part Two", sections.get(1).title);
+   }
+
+   // --- Helper methods to create test PDFs ---
+
+   private static byte[] createPdfWithParagraphGap() throws Exception {
+      try(PDDocument doc = new PDDocument()) {
+         PDPage page = new PDPage();
+         doc.addPage(page);
+         try(PDPageContentStream cs = new PDPageContentStream(doc, page)) {
+            cs.beginText();
+            cs.setFont(PDType1Font.HELVETICA, 12);
+            cs.newLineAtOffset(50, 700);
+            cs.showText("First paragraph of text.");
+            cs.endText();
+
+            // Large gap (simulating paragraph break).
+            cs.beginText();
+            cs.setFont(PDType1Font.HELVETICA, 12);
+            cs.newLineAtOffset(50, 600);
+            cs.showText("Second paragraph of text.");
+            cs.endText();
+         }
+
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         doc.save(baos);
+         return baos.toByteArray();
+      }
+   }
+
+   private static byte[] createPdfWithHeading() throws Exception {
+      try(PDDocument doc = new PDDocument()) {
+         PDPage page = new PDPage();
+         doc.addPage(page);
+         try(PDPageContentStream cs = new PDPageContentStream(doc, page)) {
+            // Body text first (establishes 12pt as body size).
+            cs.beginText();
+            cs.setFont(PDType1Font.HELVETICA, 12);
+            cs.newLineAtOffset(50, 700);
+            cs.showText("This is regular body text at twelve points.");
+            cs.endText();
+
+            cs.beginText();
+            cs.setFont(PDType1Font.HELVETICA, 12);
+            cs.newLineAtOffset(50, 680);
+            cs.showText("More regular body text to establish baseline.");
+            cs.endText();
+
+            cs.beginText();
+            cs.setFont(PDType1Font.HELVETICA, 12);
+            cs.newLineAtOffset(50, 660);
+            cs.showText("And yet more body text here.");
+            cs.endText();
+
+            // Heading at 18pt.
+            cs.beginText();
+            cs.setFont(PDType1Font.HELVETICA, 18);
+            cs.newLineAtOffset(50, 600);
+            cs.showText("Major Section Heading");
+            cs.endText();
+
+            // Body text after heading.
+            cs.beginText();
+            cs.setFont(PDType1Font.HELVETICA, 12);
+            cs.newLineAtOffset(50, 570);
+            cs.showText("Content under the heading.");
+            cs.endText();
+         }
+
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         doc.save(baos);
+         return baos.toByteArray();
+      }
+   }
+
+   private static byte[] createPdfWithVisualTitle() throws Exception {
+      try(PDDocument doc = new PDDocument()) {
+         // No metadata title set.
+         PDPage page = new PDPage();
+         doc.addPage(page);
+         try(PDPageContentStream cs = new PDPageContentStream(doc, page)) {
+            // Large title.
+            cs.beginText();
+            cs.setFont(PDType1Font.HELVETICA, 24);
+            cs.newLineAtOffset(50, 750);
+            cs.showText("Important Research Paper");
+            cs.endText();
+
+            // Body text (needs several lines to establish 12pt as mode).
+            for(int i = 0; i < 5; i++) {
+               cs.beginText();
+               cs.setFont(PDType1Font.HELVETICA, 12);
+               cs.newLineAtOffset(50, 600 - (i * 20));
+               cs.showText("Body text line " + (i + 1) + " of this document.");
+               cs.endText();
+            }
+         }
+
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         doc.save(baos);
+         return baos.toByteArray();
+      }
+   }
+
+   private static byte[] createPdfWithHeadingSections() throws Exception {
+      try(PDDocument doc = new PDDocument()) {
+         // Page 1 — body + heading.
+         PDPage page1 = new PDPage();
+         doc.addPage(page1);
+         try(PDPageContentStream cs = new PDPageContentStream(doc, page1)) {
+            for(int i = 0; i < 4; i++) {
+               cs.beginText();
+               cs.setFont(PDType1Font.HELVETICA, 12);
+               cs.newLineAtOffset(50, 700 - (i * 20));
+               cs.showText("Intro body text line " + (i + 1) + ".");
+               cs.endText();
+            }
+
+            cs.beginText();
+            cs.setFont(PDType1Font.HELVETICA, 18);
+            cs.newLineAtOffset(50, 550);
+            cs.showText("First Major Section");
+            cs.endText();
+
+            for(int i = 0; i < 3; i++) {
+               cs.beginText();
+               cs.setFont(PDType1Font.HELVETICA, 12);
+               cs.newLineAtOffset(50, 500 - (i * 20));
+               cs.showText("Section one content line " + (i + 1) + ".");
+               cs.endText();
+            }
+         }
+
+         // Page 2 — another heading.
+         PDPage page2 = new PDPage();
+         doc.addPage(page2);
+         try(PDPageContentStream cs = new PDPageContentStream(doc, page2)) {
+            cs.beginText();
+            cs.setFont(PDType1Font.HELVETICA, 18);
+            cs.newLineAtOffset(50, 700);
+            cs.showText("Second Major Section");
+            cs.endText();
+
+            for(int i = 0; i < 3; i++) {
+               cs.beginText();
+               cs.setFont(PDType1Font.HELVETICA, 12);
+               cs.newLineAtOffset(50, 650 - (i * 20));
+               cs.showText("Section two content line " + (i + 1) + ".");
+               cs.endText();
+            }
+         }
+
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         doc.save(baos);
+         return baos.toByteArray();
+      }
+   }
+
+   private static byte[] createPdfWithBookmarksAndHeadings() throws Exception {
+      try(PDDocument doc = new PDDocument()) {
+         PDDocumentInformation info = new PDDocumentInformation();
+         info.setTitle("Dual Doc");
+         doc.setDocumentInformation(info);
+
+         // Two pages with headings.
+         for(int p = 0; p < 2; p++) {
+            PDPage page = new PDPage();
+            doc.addPage(page);
+            try(PDPageContentStream cs = new PDPageContentStream(doc, page)) {
+               cs.beginText();
+               cs.setFont(PDType1Font.HELVETICA, 18);
+               cs.newLineAtOffset(50, 700);
+               cs.showText("Heading on Page " + (p + 1));
+               cs.endText();
+
+               for(int i = 0; i < 3; i++) {
+                  cs.beginText();
+                  cs.setFont(PDType1Font.HELVETICA, 12);
+                  cs.newLineAtOffset(50, 650 - (i * 20));
+                  cs.showText("Body text on page " + (p + 1) + " line " + (i + 1) + ".");
+                  cs.endText();
+               }
+            }
+         }
+
+         // Add outline with 2 bookmarks.
+         PDDocumentOutline outline = new PDDocumentOutline();
+         String[] titles = {"Part One", "Part Two"};
+         for(int i = 0; i < 2; i++) {
+            PDOutlineItem item = new PDOutlineItem();
+            item.setTitle(titles[i]);
+            PDPageFitDestination dest = new PDPageFitDestination();
+            dest.setPage(doc.getPage(i));
+            item.setDestination(dest);
+            outline.addLast(item);
+         }
+         doc.getDocumentCatalog().setDocumentOutline(outline);
+
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         doc.save(baos);
+         return baos.toByteArray();
+      }
    }
 
    private static byte[] createPdfWithBookmarks() throws Exception {
@@ -110,7 +371,6 @@ public class PdfParserTest {
          info.setAuthor("Tester");
          doc.setDocumentInformation(info);
 
-         // Create 3 pages.
          for(int i = 0; i < 3; i++) {
             PDPage page = new PDPage();
             doc.addPage(page);
@@ -123,7 +383,6 @@ public class PdfParserTest {
             }
          }
 
-         // Create outline with 3 bookmarks.
          PDDocumentOutline outline = new PDDocumentOutline();
          String[] titles = {"Introduction", "Chapter One", "Conclusion"};
          for(int i = 0; i < 3; i++) {
@@ -193,5 +452,15 @@ public class PdfParserTest {
          doc.save(baos);
          return baos.toByteArray();
       }
+   }
+
+   private static int countOccurrences(String str, String sub) {
+      int count = 0;
+      int idx = 0;
+      while((idx = str.indexOf(sub, idx)) != -1) {
+         count++;
+         idx += sub.length();
+      }
+      return count;
    }
 }
