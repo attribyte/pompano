@@ -305,6 +305,87 @@ public class PdfParser {
       return -1;
    }
 
+   /**
+    * Generate a debug report of the structural analysis for a PDF.
+    * @param pdfBytes The PDF file content.
+    * @param filename The original filename.
+    * @return A human-readable debug report.
+    * @throws IOException on parse error.
+    */
+   public static String debugStructure(byte[] pdfBytes, String filename) throws IOException {
+      try(PDDocument doc = PDDocument.load(pdfBytes)) {
+         PDDocumentInformation info = doc.getDocumentInformation();
+         int totalPages = doc.getNumberOfPages();
+
+         StructuralTextStripper stripper = new StructuralTextStripper();
+         StringWriter sw = new StringWriter();
+         stripper.writeText(doc, sw);
+         List<PdfLine> lines = stripper.getLines();
+         PdfStructure structure = PdfStructure.analyze(lines, totalPages);
+
+         StringBuilder out = new StringBuilder();
+         out.append("=== PDF Debug: ").append(filename).append(" ===\n");
+         out.append("Pages: ").append(totalPages).append("\n");
+
+         // PDF metadata.
+         if(info != null) {
+            String metaTitle = Strings.nullToEmpty(info.getTitle()).trim();
+            String metaAuthor = Strings.nullToEmpty(info.getAuthor()).trim();
+            if(!metaTitle.isEmpty()) out.append("Metadata title: ").append(metaTitle).append("\n");
+            if(!metaAuthor.isEmpty()) out.append("Metadata author: ").append(metaAuthor).append("\n");
+         }
+
+         // Outline.
+         PDDocumentOutline outline = doc.getDocumentCatalog().getDocumentOutline();
+         if(outline != null && outline.hasChildren()) {
+            int count = 0;
+            for(PDOutlineItem item : outline.children()) count++;
+            out.append("Outline bookmarks: ").append(count).append("\n");
+         } else {
+            out.append("Outline: none\n");
+         }
+
+         // Structural detection results.
+         out.append("\n--- Detected ---\n");
+         out.append("Title: ").append(structure.detectedTitle != null ? structure.detectedTitle : "(none)").append("\n");
+         out.append("Author: ").append(structure.detectedAuthor != null ? structure.detectedAuthor : "(none)").append("\n");
+         out.append("Section breaks: ").append(structure.sectionBreaks.size()).append("\n");
+
+         // Lines.
+         out.append("\n--- Lines (").append(lines.size()).append(") ---\n");
+         for(int i = 0; i < lines.size(); i++) {
+            PdfLine line = lines.get(i);
+            out.append(String.format("  %3d  p%-2d  %5.1fpt  %s%s  \"%s\"\n",
+                    i, line.pageNumber, line.fontSize,
+                    line.isBold ? "B" : " ",
+                    line.paragraphStart ? "P" : " ",
+                    truncate(line.text, 80)));
+         }
+
+         // Blocks.
+         out.append("\n--- Blocks (").append(structure.blocks.size()).append(") ---\n");
+         for(int i = 0; i < structure.blocks.size(); i++) {
+            PdfStructure.PdfBlock block = structure.blocks.get(i);
+            String marker = "";
+            if(block.type == PdfStructure.BlockType.HEADING) {
+               marker = " [H" + block.headingLevel + "]";
+               if(structure.sectionBreaks.contains(i)) {
+                  marker += " [SECTION BREAK]";
+               }
+            }
+            out.append(String.format("  %3d  p%-2d  %-9s%s  \"%s\"\n",
+                    i, block.startPage, block.type, marker,
+                    truncate(block.text, 80)));
+         }
+
+         return out.toString();
+      }
+   }
+
+   private static String truncate(String s, int max) {
+      return s.length() <= max ? s : s.substring(0, max) + "...";
+   }
+
    private static String titleFromFilename(String filename) {
       if(filename != null) {
          int dot = filename.lastIndexOf('.');
