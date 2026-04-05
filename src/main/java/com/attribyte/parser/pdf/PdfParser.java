@@ -66,6 +66,13 @@ public class PdfParser {
                                             PdfParserConfig config) throws IOException {
       try(PDDocument doc = PDDocument.load(pdfBytes)) {
 
+         // Flatten form fields so their values appear in text extraction.
+         org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm acroForm =
+                 doc.getDocumentCatalog().getAcroForm();
+         if(acroForm != null) {
+            acroForm.flatten();
+         }
+
          // Path 1: Tagged PDF structure tree.
          if(TaggedPdfExtractor.isTaggedPdf(doc)) {
             List<TaggedPdfExtractor.TaggedStory> stories = TaggedPdfExtractor.extractStories(doc);
