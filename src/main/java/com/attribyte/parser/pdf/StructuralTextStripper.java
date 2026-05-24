@@ -63,7 +63,11 @@ final class StructuralTextStripper extends PDFTextStripper {
             size = tp.getFontSize() * tp.getYScale();
          }
 
-         String fontName = tp.getFont() != null ? tp.getFont().getName() : "";
+         // getFont() can be non-null while getName() is null — PDFBox returns
+         // a font object even when the font has no /BaseFont entry. Guard
+         // both so the toLowerCase() below doesn't NPE on those PDFs.
+         String fontName = (tp.getFont() != null && tp.getFont().getName() != null)
+                 ? tp.getFont().getName() : "";
 
          lineText.append(ch);
 
