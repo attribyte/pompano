@@ -60,12 +60,57 @@ public class JSONToJsoup {
    }
 
    /**
+    * The behavior when a JSON object field has an empty-string key
+    * ({@code {"": value}}). JSON permits empty keys; jsoup's
+    * {@code Element.appendElement(tagName)} does not.
+    *
+    * <p>Real-world example — CFR's WordPress events endpoint groups
+    * sessions by {@code group_name}, and ungrouped sessions land under
+    * the empty-string key:
+    * <pre>
+    *   "sessions": { "": [ { ...session data... } ] }
+    * </pre>
+    * Without handling, the whole parse aborts on the first such field.</p>
+    */
+   public enum EmptyKeyBehavior {
+
+      /**
+       * Skip the field entirely — both the empty key and its value. Data
+       * under the empty key is lost but the parse continues.
+       */
+      SKIP,
+
+      /**
+       * Substitute {@link #EMPTY_KEY_SUBSTITUTE} as the element name. Preserves
+       * the value; lets selectors reach it via the placeholder name.
+       * This is the default — most callers care more about not crashing on
+       * one weird field than about strictly preserving original key names.
+       */
+      SUBSTITUTE,
+
+      /**
+       * Re-throw jsoup's {@code IllegalArgumentException("String must not
+       * be empty")}. Legacy behavior; only useful for callers that want
+       * to be strict about JSON shape.
+       */
+      THROW
+   }
+
+   /**
+    * Element name used when {@link EmptyKeyBehavior#SUBSTITUTE} is in effect.
+    * Underscore-flanked to make it visually distinct from real field names
+    * and to keep it valid as a jsoup tag.
+    */
+   public static final String EMPTY_KEY_SUBSTITUTE = "_empty_";
+
+   /**
     * The default base URI (empty string).
     */
    private static final String BASE_URI = "";
 
    /**
     * Parse a JSON document to jsoup nodes.
+    * Empty-key handling defaults to {@link EmptyKeyBehavior#SUBSTITUTE}.
     * @param charStream The JSON character stream.
     * @param rootElementName The root element name.
     * @param nullBehavior The behavior when handling {@code null} values.
@@ -75,13 +120,29 @@ public class JSONToJsoup {
    public static Element parse(final Reader charStream,
                                final String rootElementName,
                                final NullBehavior nullBehavior) throws IOException {
-      Element rootElem = new Element(Tag.valueOf(rootElementName), BASE_URI);
-      return parse(charStream, rootElem, nullBehavior);
-
+      return parse(charStream, rootElementName, nullBehavior, EmptyKeyBehavior.SUBSTITUTE);
    }
 
    /**
     * Parse a JSON document to jsoup nodes.
+    * @param charStream The JSON character stream.
+    * @param rootElementName The root element name.
+    * @param nullBehavior The behavior when handling {@code null} values.
+    * @param emptyKeyBehavior The behavior when an object field has an empty-string key.
+    * @return The root element.
+    * @throws IOException on input exception.
+    */
+   public static Element parse(final Reader charStream,
+                               final String rootElementName,
+                               final NullBehavior nullBehavior,
+                               final EmptyKeyBehavior emptyKeyBehavior) throws IOException {
+      Element rootElem = new Element(Tag.valueOf(rootElementName), BASE_URI);
+      return parse(charStream, rootElem, nullBehavior, emptyKeyBehavior);
+   }
+
+   /**
+    * Parse a JSON document to jsoup nodes.
+    * Empty-key handling defaults to {@link EmptyKeyBehavior#SUBSTITUTE}.
     * @param charStream The JSON character stream.
     * @param rootElem The root element.
     * @param nullBehavior The behavior when handling {@code null} values.
@@ -91,16 +152,32 @@ public class JSONToJsoup {
    public static Element parse(final Reader charStream,
                                final Element rootElem,
                                final NullBehavior nullBehavior) throws IOException {
+      return parse(charStream, rootElem, nullBehavior, EmptyKeyBehavior.SUBSTITUTE);
+   }
+
+   /**
+    * Parse a JSON document to jsoup nodes.
+    * @param charStream The JSON character stream.
+    * @param rootElem The root element.
+    * @param nullBehavior The behavior when handling {@code null} values.
+    * @param emptyKeyBehavior The behavior when an object field has an empty-string key.
+    * @return The root element.
+    * @throws IOException on input exception.
+    */
+   public static Element parse(final Reader charStream,
+                               final Element rootElem,
+                               final NullBehavior nullBehavior,
+                               final EmptyKeyBehavior emptyKeyBehavior) throws IOException {
 
       JsonReader reader = new JsonReader(charStream);
       reader.setStrictness(Strictness.LENIENT);
       JsonToken type = reader.peek();
       switch(type) {
          case BEGIN_ARRAY:
-            parseArray(reader, rootElem, nullBehavior, rootElem.tagName());
+            parseArray(reader, rootElem, nullBehavior, emptyKeyBehavior, rootElem.tagName());
             break;
          case BEGIN_OBJECT:
-            parseObject(reader, rootElem, nullBehavior);
+            parseObject(reader, rootElem, nullBehavior, emptyKeyBehavior);
             break;
          default:
             parseValue(reader, type, rootElem.appendElement(reader.nextName()), nullBehavior);
@@ -112,16 +189,17 @@ public class JSONToJsoup {
    private static void parseArray(final JsonReader reader,
                                   final Element parent,
                                   final NullBehavior nullBehavior,
+                                  final EmptyKeyBehavior emptyKeyBehavior,
                                   final String elemName) throws IOException {
       reader.beginArray();
       while(reader.hasNext()) {
          JsonToken type = reader.peek();
          switch(type) {
             case BEGIN_OBJECT:
-               parseObject(reader, parent.appendElement(elemName), nullBehavior);
+               parseObject(reader, parent.appendElement(elemName), nullBehavior, emptyKeyBehavior);
                break;
             case BEGIN_ARRAY:
-               parseArray(reader, parent.appendElement(elemName), nullBehavior, elemName);
+               parseArray(reader, parent.appendElement(elemName), nullBehavior, emptyKeyBehavior, elemName);
                break;
             case NULL:
             default:
@@ -133,17 +211,42 @@ public class JSONToJsoup {
 
    private static void parseObject(final JsonReader reader,
                                    final Element parent,
-                                   final NullBehavior nullBehavior) throws IOException {
+                                   final NullBehavior nullBehavior,
+                                   final EmptyKeyBehavior emptyKeyBehavior) throws IOException {
       reader.beginObject();
       while(reader.hasNext()) {
-         final String nextName = reader.nextName();
+         final String rawName = reader.nextName();
+         // Defend against empty-string keys, which JSON permits but jsoup
+         // rejects (Element.appendElement throws IllegalArgumentException on
+         // empty tag names). See EmptyKeyBehavior javadoc for the real-world
+         // example that motivated this.
+         final String nextName;
+         if(rawName.isEmpty()) {
+            switch(emptyKeyBehavior) {
+               case SKIP:
+                  reader.skipValue();
+                  continue;
+               case THROW:
+                  // Fall through with empty name; jsoup's appendElement will
+                  // throw — preserves the legacy behavior for callers that
+                  // explicitly opt in.
+                  nextName = rawName;
+                  break;
+               case SUBSTITUTE:
+               default:
+                  nextName = EMPTY_KEY_SUBSTITUTE;
+                  break;
+            }
+         } else {
+            nextName = rawName;
+         }
          JsonToken type = reader.peek();
          switch(type) {
             case BEGIN_OBJECT:
-               parseObject(reader, parent.appendElement(nextName), nullBehavior);
+               parseObject(reader, parent.appendElement(nextName), nullBehavior, emptyKeyBehavior);
                break;
             case BEGIN_ARRAY:
-               parseArray(reader, parent, nullBehavior, nextName);
+               parseArray(reader, parent, nullBehavior, emptyKeyBehavior, nextName);
                break;
             case NULL:
             default:
