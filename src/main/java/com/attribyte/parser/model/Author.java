@@ -131,6 +131,42 @@ public class Author {
       }
 
       /**
+       * Gets the title (e.g. job title or position).
+       * @return The title.
+       */
+      public String getTitle() {
+         return title;
+      }
+
+      /**
+       * Sets the title (e.g. job title or position).
+       * @param title The title.
+       * @return A self-reference.
+       */
+      public Builder setTitle(final String title) {
+         this.title = title;
+         return this;
+      }
+
+      /**
+       * Gets the affiliation (organization or employer).
+       * @return The affiliation.
+       */
+      public String getAffiliation() {
+         return affiliation;
+      }
+
+      /**
+       * Sets the affiliation (organization or employer).
+       * @param affiliation The affiliation.
+       * @return A self-reference.
+       */
+      public Builder setAffiliation(final String affiliation) {
+         this.affiliation = affiliation;
+         return this;
+      }
+
+      /**
        * Gets the image.
        * @return the image.
        */
@@ -153,7 +189,7 @@ public class Author {
        * @return The author.
        */
       public Author build() {
-         return new Author(id, name, email, link, displayName, description, image);
+         return new Author(id, name, email, link, displayName, description, title, affiliation, image);
       }
 
       /**
@@ -167,6 +203,8 @@ public class Author {
          this.link = "";
          this.displayName = "";
          this.description = "";
+         this.title = "";
+         this.affiliation = "";
          this.image = null;
       }
 
@@ -178,11 +216,14 @@ public class Author {
        * @param link the link.
        * @param displayName The display name.
        * @param description The description.
+       * @param title The title (job title or position).
+       * @param affiliation The affiliation (organization or employer).
        * @param image An image for the author.
        */
       private Builder(final String id, final String name,
                       final String email, final String link,
                       final String displayName, final String description,
+                      final String title, final String affiliation,
                       final Image image) {
          this.id = id;
          this.name = name;
@@ -190,6 +231,8 @@ public class Author {
          this.link = link;
          this.displayName = displayName;
          this.description = description;
+         this.title = title;
+         this.affiliation = affiliation;
          this.image = image;
       }
 
@@ -199,6 +242,8 @@ public class Author {
       private String link;
       private String displayName;
       private String description;
+      private String title;
+      private String affiliation;
       private Image image;
    }
 
@@ -210,15 +255,20 @@ public class Author {
     * @param link The link.
     * @param displayName A display name.
     * @param description A description.
+    * @param title The title (job title or position).
+    * @param affiliation The affiliation (organization or employer).
     */
    private Author(final String id, final String name, final String email, final String link,
-                  final String displayName, final String description, final Image image) {
+                  final String displayName, final String description,
+                  final String title, final String affiliation, final Image image) {
       this.id = Strings.nullToEmpty(id);
       this.name = name;
       this.email = Strings.nullToEmpty(email);
       this.link = Strings.nullToEmpty(link);
       this.displayName = Strings.nullToEmpty(displayName);
       this.description = Strings.nullToEmpty(description);
+      this.title = Strings.nullToEmpty(title);
+      this.affiliation = Strings.nullToEmpty(affiliation);
       this.image = image;
    }
 
@@ -242,7 +292,7 @@ public class Author {
     */
    public static Builder builder(final Author author) {
       return new Builder(author.id, author.name, author.email, author.link, author.displayName, author.description,
-              author.image);
+              author.title, author.affiliation, author.image);
    }
 
    @Override
@@ -254,6 +304,8 @@ public class Author {
               .add("link", link)
               .add("displayName", displayName)
               .add("description", description)
+              .add("title", title)
+              .add("affiliation", affiliation)
               .add("image", image)
               .toString();
    }
@@ -287,6 +339,16 @@ public class Author {
     * A description for the author.
     */
    public final String description;
+
+   /**
+    * The author title (e.g. job title or position) or an empty string if none.
+    */
+   public final String title;
+
+   /**
+    * The author affiliation (organization or employer) or an empty string if none.
+    */
+   public final String affiliation;
 
    /**
     * An image for the author.
