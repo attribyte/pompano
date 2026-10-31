@@ -225,4 +225,25 @@ public class RSSParserTest extends ResourceTest {
       return null;
    }
 
+
+   @Test
+   public void relativeLinksResolveAgainstTheFeed() {
+      // TRT World's feed links its items as /article/…; an item with no link and no guid has none.
+      String rss = "<rss version=\"2.0\"><channel><title>T</title><link>/</link>"
+              + "<item><title>A</title><link>/article/d0129eb464a7</link><guid>/article/d0129eb464a7</guid></item>"
+              + "<item><title>B</title><guid isPermaLink=\"true\">/article/b2</guid></item>"
+              + "<item><title>C</title><description>no link at all</description></item>"
+              + "</channel></rss>";
+      ParseResult res = new RSSParser().parse(rss, "https://www.trtworld.com/feed/rss.xml", new DefaultContentCleaner());
+      assertTrue(res.resource.isPresent());
+      Resource parsed = res.resource.get();
+      assertEquals("https://www.trtworld.com/", parsed.siteLink);
+      assertEquals(3, parsed.entries.size());
+      assertEquals("https://www.trtworld.com/article/d0129eb464a7", parsed.entries.get(0).canonicalLink);
+      assertEquals("https://www.trtworld.com/article/b2", parsed.entries.get(1).canonicalLink);
+      assertTrue(parsed.entries.get(2).canonicalLink == null || parsed.entries.get(2).canonicalLink.isEmpty());
+      // Without a document address, a relative value is still nothing.
+      ParseResult bare = new RSSParser().parse(rss, "", new DefaultContentCleaner());
+      assertTrue(bare.resource.get().entries.get(0).canonicalLink == null || bare.resource.get().entries.get(0).canonicalLink.isEmpty());
+   }
 }

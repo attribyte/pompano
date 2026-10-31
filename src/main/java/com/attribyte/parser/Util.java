@@ -247,6 +247,19 @@ public class Util {
     * @return The URL or {@code null}.
     */
    public static String httpURL(String url, final String defaultProtocol) {
+      return httpURL(url, defaultProtocol, null);
+   }
+
+   /**
+    * An HTTP(S) URL from a feed's value: as given when absolute, with the protocol when it begins
+    * {@code //}, and resolved against the document's own address when relative (a feed that links
+    * its items as {@code /article/123}, as TRT World's does); else {@code null}.
+    * @param url The value.
+    * @param defaultProtocol The protocol for a protocol-relative value.
+    * @param baseUri The document's address, for a relative value; may be {@code null}.
+    * @return The URL, or {@code null} if there is none.
+    */
+   public static String httpURL(String url, final String defaultProtocol, final String baseUri) {
       url = nullToEmpty(url).trim();
       if(url.isEmpty()) {
          return null;
@@ -256,6 +269,14 @@ public class Util {
          return url;
       } else if(url.startsWith("//")) {
          return (isNullOrEmpty(defaultProtocol) ? "https" : defaultProtocol) + ":" + url;
+      } else if(!isNullOrEmpty(baseUri) && url.indexOf(':') < 0) {
+         try {
+            java.net.URI resolved = new java.net.URI(baseUri.trim()).resolve(new java.net.URI(url));
+            String s = resolved.toString();
+            return s.startsWith("http://") || s.startsWith("https://") ? s : null;
+         } catch(Exception e) {
+            return null;
+         }
       } else {
          return null;
       }

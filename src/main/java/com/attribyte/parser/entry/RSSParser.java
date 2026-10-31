@@ -63,7 +63,7 @@ public class RSSParser extends FeedParser {
       }
 
       String protocol = protocol(resource.getSourceLink());
-      String link = httpURL(childText(doc, "link"), protocol);
+      String link = httpURL(childText(doc, "link"), protocol, resource.getSourceLink());
       if(link != null) {
          resource.setSiteLink(link);
       }
@@ -121,9 +121,9 @@ public class RSSParser extends FeedParser {
 
       String protocol = protocol(baseUri);
       Element guidElem = firstChild(item, "guid");
-      String linkText = httpURL(childText(item, "link"), protocol);
+      String linkText = httpURL(childText(item, "link"), protocol, baseUri);
       if(linkText == null && guidElem != null && !guidElem.attr("isPermalink").equalsIgnoreCase("false")) {
-         linkText = httpURL(guidElem.text(), protocol);
+         linkText = httpURL(guidElem.text(), protocol, baseUri);
       }
 
       if(linkText != null) {
